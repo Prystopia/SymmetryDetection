@@ -1,0 +1,12 @@
+Complete BlueNorm Extension Method
+Complete StableNorm Extension Method
+Implement QRSolver class
+Implement lmqrsolv Method
+Implement Matrix Dot Extension Method
+Add latest Bron Kerbosch class into solution
+Complete Implementation of Calculate Parameter method
+Refactor into services and use DI
+Add more helpful comments
+Add Unit Tests
+Add E2E tests
+Implement Rotational Symmetry Detection
