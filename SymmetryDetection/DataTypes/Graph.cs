@@ -4,35 +4,39 @@ using System.Text;
 
 namespace SymmetryDetection.DataTypes
 {
-    public class Graph<T>
+    public class Graph
     {
-        public List<Node<T>> Nodes { get; set; }
-        public List<Edge> Edges { get; set; }
-        public Graph()
+        public bool[,] GraphDetails { get; set; }
+        public int Size { get; set; }
+        public Graph(int size)
         {
-            Nodes = new List<Node<T>>();
-            Edges = new List<Edge>();
+            Size = size;
+            GraphDetails = new bool[size, size];
         }
-        public Graph(List<Node<T>> nodes)
-        {
-            Nodes = nodes;
-            Edges = new List<Edge>();
-        }
-        public void AddEdge(int nodeFrom, int nodeTo)
-        {
-            Edges.Add(new Edge(nodeFrom, nodeTo));
-        }
-        public void AddNode(Node<T> node)
-        {
-            Nodes.Add(node);
-        }
-        public List<Node<T>> GetNodeNeighbours(Node<T> srcNode)
-        {
 
-        }
-        public void RemoveNode(Node<T> node)
+        public void AddEdge(int from, int to)
         {
+            GraphDetails[from - 1, to - 1] = true;
+            GraphDetails[to - 1, from - 1] = true;
+        }
 
+        public bool[] GetCol(int colIndex)
+        {
+            bool[] column = new bool[Size];
+            for (int i = 0; i < Size; i++)
+            {
+                column[i] = GraphDetails[i, colIndex];
+            }
+            return column;
+        }
+
+        public string Export()
+        {
+            StringBuilder sb = new StringBuilder();
+
+
+
+            return sb.ToString();
         }
     }
 }

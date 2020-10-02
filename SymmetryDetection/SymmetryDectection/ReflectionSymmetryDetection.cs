@@ -161,7 +161,7 @@ namespace SymmetryDetection.SymmetryDectection
                 indices.Add(i);
             }
             List<int> mergedSymmetryIds = new List<int>();
-            Graph<ReflectionalSymmetry> symmetryAdjacency = new Graph<ReflectionalSymmetry>(symmetries.Select((r, i) => new Node<ReflectionalSymmetry>() { Index = i, Data = r }).ToList());
+            Graph symmetryAdjacency = new Graph(indices.Count);
 
             for (int i = 0; i < indices.Count; i++)
             {
@@ -184,12 +184,12 @@ namespace SymmetryDetection.SymmetryDectection
                     }
                 }
             }
-            BronKerbosch bk = new BronKerbosch();
-            List<List<int>> cliques = bk.Run<ReflectionalSymmetry>();
-            List<List<int>> hypothesisClusters = new List<List<int>>();
+            BronKerbosch bk = new BronKerbosch(symmetryAdjacency);
+            List<IList<int>> cliques = bk.RunAlgorithm(2);
+            List<IList<int>> hypothesisClusters = new List<List<int>>();
             while (cliques.Count > 0)
             {
-                List<int> largestClique = null;
+                IList<int> largestClique = null;
                 int maxCliqueSize = 0;
                 foreach (var clique in cliques)
                 {
@@ -205,7 +205,7 @@ namespace SymmetryDetection.SymmetryDectection
                 cliques.Remove(largestClique);
 
                 // Remove hyptheses belonging to the largest clique from existing cliques
-                List<List<int>> itemsToRemove = new List<List<int>>();
+                List<IList<int>> itemsToRemove = new List<IList<int>>();
                 foreach (var clique in cliques)
                 {
                     foreach (var cluster in hypothesisClusters)
