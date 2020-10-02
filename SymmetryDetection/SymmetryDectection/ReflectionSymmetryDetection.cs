@@ -148,8 +148,10 @@ namespace SymmetryDetection.SymmetryDectection
             {
                 referencePoints.Add(CloudMean);
             }
-
-            MergeDuplicateReflectedSymmetries(SymmetriesRefined, referencePoints, OcclusionScores);
+            if (referencePoints.Any())
+            {
+                MergeDuplicateReflectedSymmetries(SymmetriesRefined, referencePoints, OcclusionScores);
+            }
         }
 
         public List<int> MergeDuplicateReflectedSymmetries(List<ReflectionalSymmetry> symmetries, List<Vector3> symmetryReferencePoints, List<float> occlusionScores)
@@ -360,8 +362,8 @@ namespace SymmetryDetection.SymmetryDectection
                     var targetPos = neighbour.neighbour.Position;
                     var targetNormal = neighbour.neighbour.Normal;
 
-                    var origDistance = originalSymmetry.PointSignedDistance(point.Position);
-                    var neighbourDistance = originalSymmetry.PointSignedDistance(neighbour.neighbour.Position);
+                    var origDistance = originalSymmetry.PointSignedDistance(srcPoint);
+                    var neighbourDistance = originalSymmetry.PointSignedDistance(targetPos);
 
                     if (MathF.Abs(origDistance - neighbourDistance) >= minimumSymmetryCorrespondanceDistance)
                     {

@@ -22,10 +22,10 @@ namespace SymmetryDetection.DataTypes
 
         public float GetDistance(Vector3 point)
         {
-            var xDist = Math.Pow(point.X - Position.X, 2);
-            var yDist = Math.Pow(point.Y - Position.Y, 2);
-            var zDist = Math.Pow(point.Z - Position.Z, 2);
-            return (float)Math.Sqrt(xDist + yDist + zDist);
+            var xDist = MathF.Pow(Position.X - point.X, 2);
+            var yDist = MathF.Pow(Position.Y - point.Y, 2);
+            var zDist = MathF.Pow(Position.Z - point.Z, 2);
+            return xDist + yDist + zDist;
         }
         public PointXYZRGBNormal Clone()
         {

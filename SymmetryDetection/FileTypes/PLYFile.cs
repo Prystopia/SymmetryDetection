@@ -31,6 +31,7 @@ namespace SymmetryDetection.FileTypes
     public class PLYFile
     {
         private const string BINARY_TYPE = "format binary_little_endian 1.0";
+        private const string ASCII_TYPE = "format ascii 1.0";
         private const string HEADER_END_TEXT = "end_header";
         private const string MAGIC_STRING = "ply";
         private const string PROPERTY_IDENTIFIER = "property";
@@ -65,9 +66,16 @@ namespace SymmetryDetection.FileTypes
                 using (StreamReader sr = new StreamReader(fs))
                 {
                     ReadHeader(sr);
-                    using (BinaryReader br = new BinaryReader(fs))
+                    if (IsBinary)
                     {
-                        ReadBody(br);
+                        using (BinaryReader br = new BinaryReader(fs))
+                        {
+                            ReadBody(br);
+                        }
+                    }
+                    else
+                    {
+                        ReadBody(sr);
                     }
                 }
             }
@@ -100,7 +108,7 @@ namespace SymmetryDetection.FileTypes
                     else if(col[0] == PROPERTY_IDENTIFIER)
                     {
                         string name = col[2];
-                        var prop = new PLYProperty() { Name = col[2] };
+                        var prop = new PLYProperty() { Name = name };
                         switch(col[1])
                         {
                             case "int":
@@ -159,10 +167,10 @@ namespace SymmetryDetection.FileTypes
                             position.X = fileReader.ReadSingle();
                             break;
                         case "y":
-                            position.X = fileReader.ReadSingle();
+                            position.Y = fileReader.ReadSingle();
                             break;
                         case "z":
-                            position.X = fileReader.ReadSingle();
+                            position.Z = fileReader.ReadSingle();
                             break;
                         case "red":
                             r = fileReader.ReadByte();
@@ -208,6 +216,70 @@ namespace SymmetryDetection.FileTypes
                 }
             }
         }
+
+        private void ReadBody(StreamReader fileReader)
+        {
+            for (int i = 0; i < VertexCount; i++)
+            {
+
+                Vector3 position = new Vector3(), normal = new Vector3();
+                byte r = 255, g = 255, b = 255, a = 255;
+                float curvature = 0;
+
+                var line = fileReader.ReadLine();
+                var items = line.Split(' ');
+                int count = 0;
+
+                foreach (var property in Properties)
+                {
+                    switch (property.Name)
+                    {
+                        case "x":
+                            position.X = float.Parse(items[count]);
+                            break;
+                        case "y":
+                            position.Y = float.Parse(items[count]);
+                            break;
+                        case "z":
+                            position.Z = float.Parse(items[count]);
+                            break;
+                        case "red":
+                            r = byte.Parse(items[count]);
+                            break;
+                        case "green":
+                            g = byte.Parse(items[count]);
+                            break;
+                        case "blue":
+                            b = byte.Parse(items[count]);
+                            break;
+                        case "alpha":
+                            a = byte.Parse(items[count]);
+                            break;
+                        case "nx":
+                            normal.X = float.Parse(items[count]);
+                            break;
+                        case "ny":
+                            normal.Y = float.Parse(items[count]);
+                            break;
+                        case "nz":
+                            normal.Z = float.Parse(items[count]);
+                            break;
+                        case "curvature":
+                            curvature = float.Parse(items[count]);
+                            break;
+                    }
+                    count++;
+                }
+                Vertices.Add(new Vertex()
+                {
+                    Colour = Color.FromArgb(r, b, g, a),
+                    Position = position,
+                    Curvature = curvature,
+                    Normal = normal
+                });
+            }
+        }
+
 
     }
 }

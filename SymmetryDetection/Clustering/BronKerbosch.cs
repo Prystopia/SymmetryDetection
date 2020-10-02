@@ -10,6 +10,7 @@ namespace SymmetryDetection.Clustering
     {
         public Graph GraphDetails { get; set; }
         private List<IList<int>> Cliques { get; set; }
+        private int MinimumCliqueSize { get; set; }
         public BronKerbosch(Graph graph)
         {
             GraphDetails = graph;
@@ -19,6 +20,7 @@ namespace SymmetryDetection.Clustering
         public List<IList<int>> RunAlgorithm(int minCliqueSize)
         {
             int vertices = GraphDetails.Size;
+            MinimumCliqueSize = minCliqueSize;
             List<int> existingVerts = new List<int>();
             for (int i = 0; i < vertices; i++)
             {
@@ -32,7 +34,7 @@ namespace SymmetryDetection.Clustering
         {
             if (P.Count() == 0 && X.Count() == 0)
             {
-                if (!Cliques.Any(p => p.All(R.Contains)))
+                if (!Cliques.Any(p => p.All(R.Contains)) && R.Count >= MinimumCliqueSize)
                 {
                     Cliques.Add(R);
                 }

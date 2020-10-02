@@ -90,21 +90,21 @@ namespace SymmetryDetection.SymmetryDectection
                 for (int i = 0; i < segments.Count; i++)
                 {
                     segmentClouds.Add(cloud.Clone());
-                    segmentClouds[i].GetCloudBoundary(); //Not sure this is even used
+                    //segmentClouds[i].GetCloudBoundary(); //Not sure this is even used
                     ReflectionalSymmetryDetection rsd = new ReflectionalSymmetryDetection(segmentClouds[i]);
                     rsd.Detect();
                     rsd.Filter();
                     rsd.Merge();
 
                     //Replication of GetSymmetries Method
-                    symmetryTEMP[i] = rsd.SymmetriesRefined;
-                    symmetryFilteredIdsTEMP[i] = rsd.SymmetryFilteredIds;
-                    symmetryMergedIdsTEMP[i] = rsd.SymmetryMergedIds;
+                    symmetryTEMP.Add(rsd.SymmetriesRefined);
+                    symmetryFilteredIdsTEMP.Add(rsd.SymmetryFilteredIds);
+                    symmetryMergedIdsTEMP.Add(rsd.SymmetryMergedIds);
 
                     //Replication of GetScoresMethod
-                    occlusionScoresTEMP[i] = rsd.OcclusionScores;
-                    cloudInlierScoresTEMP[i] = rsd.CloudInlierScores;
-                    correspondenceInlierScoresTEMP[i] = rsd.CorrespondenceInlierScores;
+                    occlusionScoresTEMP.Add(rsd.OcclusionScores);
+                    cloudInlierScoresTEMP.Add(rsd.CloudInlierScores);
+                    correspondenceInlierScoresTEMP.Add(rsd.CorrespondenceInlierScores);
                 }
 
                 // Linearize symmetry data - similar to SelectMany

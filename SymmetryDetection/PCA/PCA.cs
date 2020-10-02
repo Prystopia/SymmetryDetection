@@ -74,9 +74,8 @@ namespace SymmetryDetection.SymmetryDectection
             float coeff = 1f / ((float)Indices.Count - 1f);
             //matrix is 3 rows - x, y & z + each col represents a point
             var array = DemeanedCloud.ConvertToArray().TopRows(3).Multiply(coeff);
-            var nxtArray = array.Multiply(DemeanedCloud.ConvertToArray().TopRows(3)).Transpose();
-
-            EigenvalueDecompositionF eigenvalue = new EigenvalueDecompositionF(array);
+            var nxtArray = array.Multiply(DemeanedCloud.ConvertToArray().TopRows(3).Transpose());
+            EigenvalueDecompositionF eigenvalue = new EigenvalueDecompositionF(nxtArray);
             this.EigenVectors = eigenvalue.Eigenvectors;
             this.EigenValues = eigenvalue.RealEigenvalues;
         }

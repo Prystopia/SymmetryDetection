@@ -747,9 +747,9 @@ namespace SymmetryDetection.Extensions
 
         public static float[,] Transpose(this float[,] original)
         {
-            float[,] newArray = new float[original.GetLength(1), original.Length];
+            float[,] newArray = new float[original.GetLength(1), original.GetLength(0)];
 
-            for(int i = 0; i < original.Length; i++)
+            for(int i = 0; i < original.GetLength(0); i++)
             {
                 for(int j = 0; j < original.GetLength(1); j++)
                 {
