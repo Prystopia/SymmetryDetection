@@ -1,5 +1,4 @@
 ﻿using Accord.Math.Decompositions;
-using Accord.Statistics.Analysis;
 using SymmetryDetection.DataTypes;
 using SymmetryDetection.Extensions;
 using System;
@@ -74,7 +73,8 @@ namespace SymmetryDetection.SymmetryDectection
         {
             float coeff = 1f / ((float)Indices.Count - 1f);
             //matrix is 3 rows - x, y & z + each col represents a point
-            var array = DemeanedCloud.ConvertToArray();
+            var array = DemeanedCloud.ConvertToArray().TopRows(3).Multiply(coeff);
+            var nxtArray = array.Multiply(DemeanedCloud.ConvertToArray().TopRows(3)).Transpose();
 
             EigenvalueDecompositionF eigenvalue = new EigenvalueDecompositionF(array);
             this.EigenVectors = eigenvalue.Eigenvectors;

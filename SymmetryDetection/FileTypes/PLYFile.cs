@@ -65,10 +65,10 @@ namespace SymmetryDetection.FileTypes
                 using (StreamReader sr = new StreamReader(fs))
                 {
                     ReadHeader(sr);
-                }
-                using (BinaryReader br = new BinaryReader(fs))
-                {
-                    ReadBody(br);
+                    using (BinaryReader br = new BinaryReader(fs))
+                    {
+                        ReadBody(br);
+                    }
                 }
             }
         }

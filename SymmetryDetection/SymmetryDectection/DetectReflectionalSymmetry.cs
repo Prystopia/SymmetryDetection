@@ -1,5 +1,4 @@
-﻿using Accord.Statistics;
-using SymmetryDetection.Clustering;
+﻿using SymmetryDetection.Clustering;
 using SymmetryDetection.DataTypes;
 using SymmetryDetection.Extensions;
 using SymmetryDetection.FileTypes;
@@ -16,9 +15,9 @@ namespace SymmetryDetection.SymmetryDectection
     public class DetectReflectionalSymmetry
     {
 
-        public void Main()
+        public void Main(string plyFileLoc)
         {
-            var ply = LoadPlyFile("");
+            var ply = LoadPlyFile(plyFileLoc);
             var pc = InitialisePointCloud(ply);
             var pca = new PCA(pc);
             //only required if we are downscaling - NOT IMPLEMENTED CURRENTLY
@@ -90,7 +89,7 @@ namespace SymmetryDetection.SymmetryDectection
 
                 for (int i = 0; i < segments.Count; i++)
                 {
-                    segmentClouds[i] = cloud.Clone();
+                    segmentClouds.Add(cloud.Clone());
                     segmentClouds[i].GetCloudBoundary(); //Not sure this is even used
                     ReflectionalSymmetryDetection rsd = new ReflectionalSymmetryDetection(segmentClouds[i]);
                     rsd.Detect();

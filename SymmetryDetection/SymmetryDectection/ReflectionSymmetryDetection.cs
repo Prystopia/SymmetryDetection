@@ -1,5 +1,4 @@
-﻿using Accord.Math.Optimization;
-using Accord.Statistics;
+﻿using Accord.Statistics;
 using SymmetryDetection.Clustering;
 using SymmetryDetection.DataTypes;
 using SymmetryDetection.Extensions;
@@ -186,7 +185,7 @@ namespace SymmetryDetection.SymmetryDectection
             }
             BronKerbosch bk = new BronKerbosch(symmetryAdjacency);
             List<IList<int>> cliques = bk.RunAlgorithm(2);
-            List<IList<int>> hypothesisClusters = new List<List<int>>();
+            List<IList<int>> hypothesisClusters = new List<IList<int>>();
             while (cliques.Count > 0)
             {
                 IList<int> largestClique = null;
@@ -250,6 +249,7 @@ namespace SymmetryDetection.SymmetryDectection
             List<ReflectionalSymmetry> symmetries = new List<ReflectionalSymmetry>();
             PCA pcaSolver = new PCA(cloud);
             
+            //TODO - this is incorrect - obviously as it's accord.net
             float[,] basis = pcaSolver.EigenVectors;
 
             // Make sure that major axes form a right-handed coordinate system
@@ -473,20 +473,20 @@ namespace SymmetryDetection.SymmetryDectection
                         symmetryNormal.Z,
                     };
                     functor.Correspondences = correspondences;
+                    LevenbergMarquardtMLJS lm = new LevenbergMarquardtMLJS(functor);
+                    var solution = lm.Run(input);
+                    //parameters are the correspondences
 
-                    LevenbergMarquardt lm = new LevenbergMarquardt(functor);
-                    lm.Minimise(input);
-
-                    Vector6 solution = new Vector6()
+                    Vector6 solutionVector = new Vector6()
                     {
-                        X = input[0],
-                        Y = input[1],
-                        Z = input[2],
-                        A = input[3],
-                        B = input[4],
-                        C = input[5],
+                        X = solution[0],
+                        Y = solution[1],
+                        Z = solution[2],
+                        A = solution[3],
+                        B = solution[4],
+                        C = solution[5],
                     };
-                    refinedSymmetry = new ReflectionalSymmetry(solution.Head, solution.Tail);
+                    refinedSymmetry = new ReflectionalSymmetry(solutionVector.Head, solutionVector.Tail);
                     refinedSymmetry.SetOriginProjected(cloud.Mean); // seems to be overwriting the above line by setting origin to the 
 
                     if(++numIterations >= MAX_ITERATIONS)

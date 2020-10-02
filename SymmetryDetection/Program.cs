@@ -11,8 +11,7 @@ namespace SymmetryDetection
         static void Main(string[] args)
         {
             DetectReflectionalSymmetry drs = new DetectReflectionalSymmetry();
-            drs.Main();
-
+            drs.Main($@"C:\Temp\Test.ply");
         }
     }
 
