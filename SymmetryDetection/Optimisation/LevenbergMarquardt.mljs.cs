@@ -122,7 +122,7 @@ namespace SymmetryDetection.Optimisation
 
             float[] evaluatedData = Functor.Function(parameters);
             float[][] gradient = GradientFunction(evaluatedData, parameters);
-            //float[][] matrix = MatrixFunction(parameters, evaluatedData);//TODO - Check if this is correct
+            float[][] matrix = MatrixFunction(parameters, evaluatedData);//TODO - Check if this is correct
 
             var gradientMultipliedTransposed = gradient.MatrixMultiply(gradient.Transpose());
             var identityCopy = (float[,])identity.Clone();

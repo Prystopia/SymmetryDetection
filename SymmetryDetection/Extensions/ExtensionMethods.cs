@@ -420,6 +420,38 @@ namespace SymmetryDetection.Extensions
             return result;
         }
 
+        public static float[,] MatrixMultiply(this float[,] original, float[,] other)
+        {
+            int m = original.GetLength(0);
+            int n = original.GetLength(1);
+            int p = other.GetLength(1);
+
+            float[,] result = new float[m, p];
+
+            float[] Bcolj = new float[n];
+            for (int j = 0; j < p; j++)
+            {
+                for (int k = 0; k < n; k++)
+                {
+                    Bcolj[k] = other[k,j];
+                }
+
+                for (int i = 0; i < m; i++)
+                {
+                    float s = 0;
+                    for (int k = 0; k < n; k++)
+                    {
+                        s += original[i, k] * Bcolj[k];
+                    }
+
+                    result[i, j] = s;
+                }
+            }
+            return result;
+        }
+
+
+
         public static float[,] MatrixMultiply(this float[][] original, float[,] other)
         {
             int m = original.GetLength(0);
@@ -481,6 +513,20 @@ namespace SymmetryDetection.Extensions
                 }
             }
             return result;
+        }
+
+        public static float FrobiusNorm(this float[] array)
+        {
+            //square root of sum of the absolute squares of the elements
+
+            float sum = 0;
+
+            for(int i = 0; i < array.Length; i++)
+            {
+                sum += Abs2(array[i]);
+            }
+
+            return MathF.Sqrt(sum);
         }
 
         public static float[,] Multiply(this float[,] original, float[,] other)
