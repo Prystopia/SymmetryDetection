@@ -95,6 +95,18 @@ namespace SymmetryDetection.Extensions
             return pc;
         }
 
+        public static float Dot(this Vector3 original, Vector3 next)
+        {
+            float val = 0;
+
+            var x = original.X * next.X;
+            var y = original.Y * next.Y;
+            var z = original.Z * next.Z;
+            val = x + y + z;
+
+            return val;
+        }
+
         public static float ClampValue(this float val, float min, float max)
         {
             float bounded = val;
@@ -351,6 +363,10 @@ namespace SymmetryDetection.Extensions
         //}
         public static float[,] Sub(this float[,] original, float[,] value)
         {
+            //if (original.GetLength(0) != value.GetLength(0) || this.columns !== matrix.columns)
+            //{
+            //    throw new RangeError('Matrices dimensions must be equal');
+            //}
             float[,] newArray = new float[original.GetLength(0), original.GetLength(1)];
             for (int i = 0; i < original.GetLength(0); i++)
             {
@@ -378,7 +394,7 @@ namespace SymmetryDetection.Extensions
         {
             int m = original.GetLength(0);
             int n = original.GetLength(1);
-            int p = other.GetLength(1);
+            int p = other[0].GetLength(0);
 
             float[,] result = new float[m, p];
 
@@ -403,6 +419,70 @@ namespace SymmetryDetection.Extensions
             }
             return result;
         }
+
+        public static float[,] MatrixMultiply(this float[][] original, float[,] other)
+        {
+            int m = original.GetLength(0);
+            int n = original[0].GetLength(0);
+            int p = other.GetLength(1);
+
+            float[,] result = new float[m, p];
+
+            float[] Bcolj = new float[n];
+            for (int j = 0; j < p; j++)
+            {
+                for (int k = 0; k < n; k++)
+                {
+                    Bcolj[k] = other[k,j];
+                }
+
+                for (int i = 0; i < m; i++)
+                {
+                    float s = 0;
+                    for (int k = 0; k < n; k++)
+                    {
+                        s += original[i][k] * Bcolj[k];
+                    }
+
+                    result[i, j] = s;
+                }
+            }
+            return result;
+        }
+        public static float[][] MatrixMultiply(this float[][] original, float[][] other)
+        {
+            int m = original.GetLength(0);
+            int n = original[0].GetLength(0);
+            int p = other[0].GetLength(0);
+
+            float[][] result = new float[m][];
+
+            float[] Bcolj = new float[n];
+            for (int j = 0; j < p; j++)
+            {
+                for (int k = 0; k < n; k++)
+                {
+                    Bcolj[k] = other[k][j];
+                }
+
+                for (int i = 0; i < m; i++)
+                {
+                    if (result[i] == null)
+                    {
+                        result[i] = new float[m];
+                    }
+                    float s = 0;
+                    for (int k = 0; k < n; k++)
+                    {
+                        s += original[i][k] * Bcolj[k];
+                    }
+
+                    result[i][j] = s;
+                }
+            }
+            return result;
+        }
+
         public static float[,] Multiply(this float[,] original, float[,] other)
         {
             int m = original.GetLength(0);
@@ -754,6 +834,23 @@ namespace SymmetryDetection.Extensions
                 for(int j = 0; j < original.GetLength(1); j++)
                 {
                     newArray[j, i] = original[i, j];
+                }
+            }
+
+
+            return newArray;
+        }
+
+        public static float[][] Transpose(this float[][] original)
+        {
+            float[][] newArray = new float[original[0].GetLength(0)][];
+
+            for (int j = 0; j < original[0].GetLength(0); j++)
+            {
+                newArray[j] = new float[original.GetLength(0)];
+                for (int i = 0; i < original.GetLength(0); i++)
+                {
+                    newArray[j][i] = original[i][j];
                 }
             }
 

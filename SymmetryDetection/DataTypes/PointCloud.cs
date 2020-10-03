@@ -44,14 +44,13 @@ namespace SymmetryDetection.DataTypes
             return newCloud;
         }
 
-        public List<(PointXYZRGBNormal neighbour, float distanceSquared)> GetNeighbours(PointXYZRGBNormal initial)
+        public List<(PointXYZRGBNormal neighbour, float distanceSquared)> GetNeighbours(PointXYZRGBNormal initial, float? searchRadius = 1)
         {
-            float searchRadius = 1;
             List<(PointXYZRGBNormal neighbour, float distanceSquared)> neighbourPoints = new List<(PointXYZRGBNormal neighbour, float distanceSquared)>();
             foreach (var point2 in Points)
             {
                 var distance = point2.GetDistance(initial.Position);
-                if (distance <= searchRadius)
+                if (!searchRadius.HasValue || distance <= searchRadius)
                 {
                     neighbourPoints.Add((point2, distance));
                 }
@@ -62,8 +61,8 @@ namespace SymmetryDetection.DataTypes
 
         public List<(PointXYZRGBNormal neighbour, float distance)> GetClosetNeighbours(PointXYZRGBNormal initial, int neighboursToReturn)
         {
-            var neighbours = GetNeighbours(initial);
-            var orderedNeighbours = neighbours.OrderByDescending(n => n.distanceSquared);
+            var neighbours = GetNeighbours(initial, null);
+            var orderedNeighbours = neighbours.OrderBy(n => n.distanceSquared);
             return orderedNeighbours.Take(neighboursToReturn).ToList();
         }
 

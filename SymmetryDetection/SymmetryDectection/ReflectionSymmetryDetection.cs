@@ -17,7 +17,7 @@ namespace SymmetryDetection.SymmetryDectection
         private const float MAX_OCCLUSION_SCORE = 0.01f;
         private const float MIN_CLOUD_INLIER_SCORE = 0.5f;
         private const float MIN_CORRESPONDANCE_INLIER_SCORE = 0.7f;
-        private const float MAX_SYMMETRY_CORRESPONDENCE_REFLECTED_DISTANCE = 0.01f;
+        private const float MAX_SYMMETRY_CORRESPONDENCE_REFLECTED_DISTANCE = 1f;
         private const float MIN_SYMMETRY_CORRESPONDENCE_DISTANCE = 0.02f;
         private const int MAX_ITERATIONS = 20;
         public const float MAX_REFERENCE_POINT_DISTANCE = 0.3f;
@@ -71,7 +71,7 @@ namespace SymmetryDetection.SymmetryDectection
             {
                 ReflectionalSymmetry currentSymmetry = SymmetriesInitial[j];
                 List<Correspondence> currentCorrespondances = new List<Correspondence>();
-                if (RefineSymmetryPosition(Cloud, SymmetriesInitial[j]))
+                if (RefineSymmetryPosition(Cloud, currentSymmetry))
                 {
                     if (RefineGlobalSymmetryPosition(Cloud, currentSymmetry))
                     {

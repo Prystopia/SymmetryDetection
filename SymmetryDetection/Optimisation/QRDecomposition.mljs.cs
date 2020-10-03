@@ -5,6 +5,7 @@ using System.Text;
 
 namespace SymmetryDetection.Optimisation
 {
+    //Taken from the mljs library
     public class QRDecomposition
     {
         public float[,] QR { get; set; }

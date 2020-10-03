@@ -24,7 +24,7 @@ namespace SymmetryDetection.Optimisation
         public LevenbergMarquardtMLJS(LMFunction functor)
         {
             this.MaxIterations = 100;
-            this.Damping = 0;
+            this.Damping = 1;
             this.Functor = functor;
         }
 
@@ -63,6 +63,7 @@ namespace SymmetryDetection.Optimisation
                 //    parameters[k] = MathF.Min(MathF.Max(MinValues[k], parameters[k]), MaxValues[k]);
                 //}
 
+                //check for convergence
                 currentError = Functor.Function(parameters).Sum();
                 if(float.IsNaN(currentError))
                 {
@@ -87,7 +88,7 @@ namespace SymmetryDetection.Optimisation
 
                 for (int point = 0; point < m; point++)
                 {
-                    ans[i][point] = evaluatedData[point] - Functor.Function(parameters)[point];
+                    ans[i][point] = evaluatedData[point] - Functor.Function(auxParams)[point];
                 }
             }
             return ans;
@@ -95,7 +96,9 @@ namespace SymmetryDetection.Optimisation
 
         public float[][] MatrixFunction(float[] evaluatedData, float[] parameters)
         {
-            int m = parameters.Length;
+            int m = 1;// parameters.Length;
+
+            //A*X = B
 
             float[][] ans = new float[m][];
 
@@ -109,7 +112,7 @@ namespace SymmetryDetection.Optimisation
 
         public float[] Step(float[] parameters)
         {
-            float value = Damping * MathF.Pow(gradientDifference, 2);
+            float value = Damping * MathF.Pow(gradientDifference, 2); // lamda in some implementations
             float[,] identity = new float[parameters.Length, parameters.Length];
 
             for (int i = 0; i < parameters.Length; i++)
@@ -119,30 +122,35 @@ namespace SymmetryDetection.Optimisation
 
             float[] evaluatedData = Functor.Function(parameters);
             float[][] gradient = GradientFunction(evaluatedData, parameters);
-            float[][] matrix = MatrixFunction(parameters, evaluatedData);//TODO - Check if this is correct
+            //float[][] matrix = MatrixFunction(parameters, evaluatedData);//TODO - Check if this is correct
 
-
+            var gradientMultipliedTransposed = gradient.MatrixMultiply(gradient.Transpose());
             var identityCopy = (float[,])identity.Clone();
             for (int i = 0; i < identityCopy.GetLength(0); i++)
             {
                 for (int j = 0; j < identityCopy.GetLength(1); j++)
                 {
-                    identityCopy[i, j] = identityCopy[i, j] + value;
+                    identityCopy[i, j] = identityCopy[i, j] + gradientMultipliedTransposed[i][j];
                 }
             }
 
             float[,] inverseMatrix = Inverse(identityCopy);
 
-            float[,] parametersCopy = (float[,])parameters.Clone();
-            parametersCopy = parametersCopy.Sub(
-                                    inverseMatrix
-                                      .MatrixMultiply(gradient)
-                                      .MatrixMultiply(matrix)
-                                      .Multiply(gradientDifference)
-                                      .Transpose()
+
+            //var negativeStep = gradient.MatrixMultiply(inverseMatrix);//I.E. Solve
+            //subtract negative step from current parameter values
+
+            float[,] parametersCopy = new float[1, parameters.Length];
+            for(int i = 0; i < parameters.Length; i++)
+            {
+                parametersCopy[0, i] = parameters[i];
+            }
+
+            var newParams = parametersCopy.Sub(
+                                    inverseMatrix.MatrixMultiply(gradient).MatrixMultiply(matrix).Multiply(gradientDifference).Transpose()//Solve  = inverse matrix code A*X = B, A = IdentityMaxtrix, B == Gradient therefore X = B / A
                                   );
 
-            return parametersCopy.To1DArray();
+            return newParams.To1DArray();
         }
         private float[,] Inverse(float[,] leftHand)
         {
