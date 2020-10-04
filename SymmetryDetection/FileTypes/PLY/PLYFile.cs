@@ -4,31 +4,13 @@ using System.Drawing;
 using System.IO;
 using System.Numerics;
 using System.Text;
+using SymmetryDetection.DataTypes;
+using SymmetryDetection.Interfaces;
 
-namespace SymmetryDetection.FileTypes
+namespace SymmetryDetection.FileTypes.PLY
 {
-    public class PLYProperty
-    {
-        public enum PropertyType
-        {
-            Float,
-            Int,
-            Byte,
-            Data16,
-            Data64
-        }
-        public PropertyType DataType { get; set; }
-        public string Name { get; set; }
-    }
-    public class Vertex
-    {
-        public Vector3 Position { get; set; }
-        public Color Colour { get; set; }
-        public Vector3 Normal { get; set; }
-        public float Curvature { get; set; }
-        public Dictionary<string, object> AdditionalProperties { get; set; }
-    }
-    public class PLYFile
+   
+    public class PLYFile : IFileType
     {
         private const string BINARY_TYPE = "format binary_little_endian 1.0";
         private const string ASCII_TYPE = "format ascii 1.0";
@@ -49,8 +31,6 @@ namespace SymmetryDetection.FileTypes
         private int Width { get; set; }
         private int Height { get; set; }
 
-
-
         public PLYFile()
         {
             Origin = Vector4.Zero;
@@ -59,7 +39,7 @@ namespace SymmetryDetection.FileTypes
             Vertices = new List<Vertex>();
         }
 
-        public void ReadFile(string fileLoc)
+        public void LoadFromFile(string fileLoc)
         {
             using (FileStream fs = new FileStream(fileLoc, FileMode.Open))
             {
@@ -79,6 +59,22 @@ namespace SymmetryDetection.FileTypes
                     }
                 }
             }
+        }
+
+        public PointCloud ConvertToPointCloud()
+        {
+            PointCloud cloud = new PointCloud();
+            foreach (var vert in Vertices)
+            {
+                cloud.Points.Add(new PointXYZRGBNormal()
+                {
+                    Colour = vert.Colour,
+                    Position = vert.Position,
+                    Curvature = vert.Curvature,
+                    Normal = vert.Normal
+                });
+            }
+            return cloud;
         }
 
         private void ReadHeader(StreamReader fileReader)
@@ -279,7 +275,5 @@ namespace SymmetryDetection.FileTypes
                 });
             }
         }
-
-
     }
 }

@@ -1,4 +1,5 @@
 ﻿using SymmetryDetection.Extensions;
+using SymmetryDetection.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -41,7 +42,7 @@ namespace SymmetryDetection.SymmetryDectection
             angle = MathF.Acos(LineLineAngleCos(Normal, other.Normal));
             Vector3 refProjectPoint1 = ProjectPoint(referencePoint);
             Vector3 refProjectPoint2 = other.ProjectPoint(referencePoint);
-            distance = ReflectionalSymmetryDetection.PointToPointDistance(refProjectPoint1, refProjectPoint2);
+            distance = MathsHelpers.PointToPointDistance(refProjectPoint1, refProjectPoint2);
         }
 
         private float LineLineAngleCos(Vector3 direction1, Vector3 direction2)

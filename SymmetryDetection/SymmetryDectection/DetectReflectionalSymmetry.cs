@@ -2,6 +2,8 @@
 using SymmetryDetection.DataTypes;
 using SymmetryDetection.Extensions;
 using SymmetryDetection.FileTypes;
+using SymmetryDetection.FileTypes.PLY;
+using SymmetryDetection.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,64 +13,27 @@ using System.Text;
 
 namespace SymmetryDetection.SymmetryDectection
 {
-
     public class DetectReflectionalSymmetry
     {
+        private PointCloud Cloud { get; set; }
+        private PCA ComponentsAnalysis { get; set; }
+        public List<ReflectionalSymmetry> Symmetries { get; set; }
 
-        public void Main(string plyFileLoc)
+        public DetectReflectionalSymmetry(IFileType file)
         {
-            var ply = LoadPlyFile(plyFileLoc);
-            var pc = InitialisePointCloud(ply);
-            var pca = new PCA(pc);
-            //only required if we are downscaling - NOT IMPLEMENTED CURRENTLY
-            //GetMinMax(pc, out Vector3 min, out Vector3 max);
-            var demeaned = pca.DemeanedCloud;
-            var symmetries = DetectReflectionalSymmetryScene(demeaned);
-            Console.WriteLine($"{symmetries.Count} reflectional symmetries detected");
+            Cloud = file.ConvertToPointCloud();
+            ComponentsAnalysis = new PCA(Cloud);
 
-            //unmean cloud
-            foreach (var symmetry in symmetries)
-            {
-                symmetry.Origin = symmetry.Origin + pca.Mean;
-            }
-            //Write symmetries to file
-            string exportFile = symmetries.GetExportFile();
-            File.WriteAllText(@$"C:\Temp\symmetries.{DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss-mi")}.csv", exportFile);
         }
-        private PLYFile LoadPlyFile(string fileLoc)
+
+        public string GetExportFile()
         {
-            PLYFile file = new PLYFile();
-            file.ReadFile(fileLoc);
-            return file;
+            return Symmetries.GetExportFile();
         }
-        private PointCloud InitialisePointCloud(PLYFile file)
+
+        public void DetectReflectionalSymmetries()
         {
-            PointCloud cloud = new PointCloud();
-            foreach (var vert in file.Vertices)
-            {
-                cloud.Points.Add(new PointXYZRGBNormal()
-                {
-                    Colour = vert.Colour,
-                    Position = vert.Position,
-                    Curvature = vert.Curvature,
-                    Normal = vert.Normal
-                });
-            }
-            return cloud;
-        }
-        private void GetMinMax(PointCloud cloud, out Vector3 min, out Vector3 max)
-        {
-            min = new Vector3(float.MaxValue);
-            max = new Vector3(float.MinValue);
-            foreach (var point in cloud.Points)
-            {
-                min = Vector3.Min(min, point.Position);
-                max = Vector3.Max(max, point.Position);
-            }
-        }
-        private List<ReflectionalSymmetry> DetectReflectionalSymmetryScene(PointCloud cloud)
-        {
-            List<ReflectionalSymmetry> symmetries = new List<ReflectionalSymmetry>();
+            var cloud = ComponentsAnalysis.DemeanedCloud;
             List<List<int>> segments = new List<List<int>>();
             segments.Add(new List<int>());
             for (int i = 0; i < cloud.Points.Count; i++)
@@ -91,7 +56,7 @@ namespace SymmetryDetection.SymmetryDectection
                 {
                     segmentClouds.Add(cloud.Clone());
                     //segmentClouds[i].GetCloudBoundary(); //Not sure this is even used
-                    ReflectionalSymmetryDetection rsd = new ReflectionalSymmetryDetection(segmentClouds[i]);
+                    ReflectionalSymmetryDetection rsd = new ReflectionalSymmetryDetection(segmentClouds[i], new PCA(segmentClouds[i]));
                     rsd.Detect();
                     rsd.Filter();
                     rsd.Merge();
@@ -125,7 +90,7 @@ namespace SymmetryDetection.SymmetryDectection
                         occlusionScoresLinear.Add(occlusionScoresTEMP[i][symId]);
                     }
                 }
-                ReflectionalSymmetryDetection rsdGlobal = new ReflectionalSymmetryDetection(cloud);
+                ReflectionalSymmetryDetection rsdGlobal = new ReflectionalSymmetryDetection(cloud, new PCA(cloud));
                 //merge symmetries for the entire cloud
                 List<int> symmetryMergedGlobalIdsLinear = rsdGlobal.MergeDuplicateReflectedSymmetries(symmetryLinear, referencePointsLinear,occlusionScoresLinear);
 
@@ -136,11 +101,19 @@ namespace SymmetryDetection.SymmetryDectection
                     int segId = symmetryLinearMap[merged].Item1;
                     int symId = symmetryLinearMap[merged].Item2;
 
-                    symmetries.Add(symmetryTEMP[segId][symId]);
+                    Symmetries.Add(symmetryTEMP[segId][symId]);
                     supportSegments.Add(segments[segId]);
                 }
             }
-            return symmetries;
+            UnMeanCloud();
+        }
+
+        private void UnMeanCloud()
+        {
+            foreach (var symmetry in Symmetries)
+            {
+                symmetry.Origin = symmetry.Origin + ComponentsAnalysis.Mean;
+            }
         }
     }
 }   

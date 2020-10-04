@@ -1,5 +1,6 @@
 ﻿using SymmetryDetection.DataTypes;
 using SymmetryDetection.Extensions;
+using SymmetryDetection.Helpers;
 using SymmetryDetection.SymmetryDectection;
 using System;
 using System.Collections.Generic;
@@ -56,7 +57,7 @@ namespace SymmetryDetection.Refinement
                 Vector3 targetPointReflected = sym.ReflectPoint(targetPoint);
                 Vector3 targetNormalReflected = sym.ReflectNormal(targetNormal);
 
-                errors[i] = MathF.Abs(ReflectionalSymmetryDetection.PointToPlaneSignedDistance(sourcePoint, targetPointReflected, targetNormalReflected));
+                errors[i] = MathF.Abs(MathsHelpers.PointToPlaneSignedDistance(sourcePoint, targetPointReflected, targetNormalReflected));
             }
             return errors;
             

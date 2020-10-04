@@ -132,6 +132,17 @@ namespace SymmetryDetection.DataTypes
             return isBoundary;
         }
 
+        public void GetMinMax(out Vector3 min, out Vector3 max)
+        {
+            min = new Vector3(float.MaxValue);
+            max = new Vector3(float.MinValue);
+            foreach (var point in Points)
+            {
+                min = Vector3.Min(min, point.Position);
+                max = Vector3.Max(max, point.Position);
+            }
+        }
+
         private Vector3 ProjectToPlane(Vector3 point, Vector3 planePoint, Vector3 planeNormal)
         {
             return point - (planeNormal * PointToPlaneSignedDistance(point, planePoint, planeNormal));

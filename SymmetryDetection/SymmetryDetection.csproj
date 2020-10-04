@@ -10,4 +10,8 @@
     <PackageReference Include="alglib.net" Version="3.16.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="FileTypes\PLY\" />
+    <Folder Include="Helpers\" />
+  </ItemGroup>
 </Project>

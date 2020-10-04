@@ -390,6 +390,9 @@ namespace SymmetryDetection.Extensions
             }
             return array.ToArray();
         }
+
+       
+
         public static float[,] MatrixMultiply(this float[,] original, float[][] other)
         {
             int m = original.GetLength(0);

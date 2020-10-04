@@ -1,4 +1,5 @@
-﻿using SymmetryDetection.SymmetryDectection;
+﻿using SymmetryDetection.FileTypes.PLY;
+using SymmetryDetection.SymmetryDectection;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -10,8 +11,13 @@ namespace SymmetryDetection
     {
         static void Main(string[] args)
         {
-            DetectReflectionalSymmetry drs = new DetectReflectionalSymmetry();
-            drs.Main($@"C:\Temp\Test.ply");
+            PLYFile file = new PLYFile();
+            file.LoadFromFile($@"/Users/Eddie/Untitled.ply");
+            DetectReflectionalSymmetry drs = new DetectReflectionalSymmetry(file);
+            drs.DetectReflectionalSymmetries();
+            string export = drs.GetExportFile();
+            Console.WriteLine($"{drs.Symmetries.Count} reflectional symmetries detected");
+            //write to file
         }
     }
 

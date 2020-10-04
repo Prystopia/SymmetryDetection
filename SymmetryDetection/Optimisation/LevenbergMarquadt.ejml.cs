@@ -148,16 +148,6 @@ namespace SymmetryDetection.Optimisation
 
             return error * error / Residuals.GetLength(0);
         }
-        //private void Solve()
-        //{
-        //    //A = HessianApprox, b = Gradient, X = NegativeStep;
-
-        //    //A*x = b
-        //    //X = B/A = Inverse(A) * B
-        //    var atep1 = Inverse(HessianApprox);
-        //    NegativeStep = Inverse(HessianApprox).MatrixMultiply(Gradient);
-        //}
-
         public bool Solve()
         {
             //var x = new float[a.GetLength(1), b.GetLength(1)];
@@ -174,18 +164,7 @@ namespace SymmetryDetection.Optimisation
             NegativeStep = solver.Solve(Gradient);
             return true;
         }
-        private float[,] Inverse(float[,] leftHand)
-        {
-            var rightHand = new float[leftHand.GetLength(0), leftHand.GetLength(0)];
-            for (int i = 0; i < leftHand.GetLength(0); i++)
-            {
-                for (int j = 0; j < leftHand.GetLength(0); j++)
-                {
-                    rightHand[i, j] = 1;
-                }
-            }
-            return new QRDecomposition(leftHand).Solve(rightHand);
-        }
+        
         private void ComputeGradientAndHessian(float[] parameters)
         {
             var errors = Functor.Function(parameters);
