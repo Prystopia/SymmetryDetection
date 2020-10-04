@@ -77,7 +77,10 @@ namespace SymmetryDetection.Optimisation
                     HessianApprox[i, i] = HessianDiagonal[i] + lambda;
                 }
 
-                 Solve();
+                if (!Solve())
+                {
+                    return parameters;
+                }
 
                 var parameterCopy = new float[parameters.Length, 1];
                 for(int i = 0; i < parameters.Length; i++)
@@ -145,13 +148,31 @@ namespace SymmetryDetection.Optimisation
 
             return error * error / Residuals.GetLength(0);
         }
-        private void Solve()
-        {
-            //A = HessianApprox, b = Gradient, X = NegativeStep;
+        //private void Solve()
+        //{
+        //    //A = HessianApprox, b = Gradient, X = NegativeStep;
 
-            //A*x = b
-            //X = B/A = Inverse(A) * B
-            NegativeStep = Inverse(HessianApprox).MatrixMultiply(Gradient);
+        //    //A*x = b
+        //    //X = B/A = Inverse(A) * B
+        //    var atep1 = Inverse(HessianApprox);
+        //    NegativeStep = Inverse(HessianApprox).MatrixMultiply(Gradient);
+        //}
+
+        public bool Solve()
+        {
+            //var x = new float[a.GetLength(1), b.GetLength(1)];
+
+            // LinearSolverFactory_DDRM.general(a.numRows, a.numCols);
+
+            QRDecomposer decomposer = new QRDecomposer();
+            LinearSolver solver = new LinearSolver(decomposer);
+            // make sure the inputs 'a' and 'b' are not modified
+
+            if (!solver.SetA(HessianApprox))
+                return false;
+
+            NegativeStep = solver.Solve(Gradient);
+            return true;
         }
         private float[,] Inverse(float[,] leftHand)
         {

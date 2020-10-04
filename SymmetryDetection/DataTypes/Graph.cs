@@ -16,8 +16,8 @@ namespace SymmetryDetection.DataTypes
 
         public void AddEdge(int from, int to)
         {
-            GraphDetails[from - 1, to - 1] = true;
-            GraphDetails[to - 1, from - 1] = true;
+            GraphDetails[from, to] = true;
+            GraphDetails[to, from] = true;
         }
 
         public bool[] GetCol(int colIndex)

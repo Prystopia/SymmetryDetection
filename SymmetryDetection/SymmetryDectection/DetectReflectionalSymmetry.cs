@@ -122,6 +122,7 @@ namespace SymmetryDetection.SymmetryDectection
                         symmetryLinearMap.Add((i, symId));
                         supportSizesLinear.Add(segmentClouds[i].Points.Count);
                         referencePointsLinear.Add(segmentClouds[i].Mean);
+                        occlusionScoresLinear.Add(occlusionScoresTEMP[i][symId]);
                     }
                 }
                 ReflectionalSymmetryDetection rsdGlobal = new ReflectionalSymmetryDetection(cloud);

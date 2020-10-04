@@ -98,13 +98,13 @@ namespace SymmetryDetection.SymmetryDectection
                         currentCloudInlierScore = inlierScoreSum / Cloud.Points.Count;
                         currentCorrespondanceInlierScore = inlierScoreSum / currentCorrespondances.Count;
 
-                        symmetriesTMP[j] = currentSymmetry;
-                        occlusionScoresTMP[j] = currentOcclusionScore;
-                        cloudInlierScoresTMP[j] = currentCloudInlierScore;
-                        correspInlierScoresTMP[j] = currentCorrespondanceInlierScore;
-                        pointSymmetryScoresTMP[j] = currentPointSymmetryScores;
-                        pointOcclusionScoresTMP[j] = currentPointOcclusionScores;
-                        validSymTableTMP[j] = true;
+                        symmetriesTMP.Add(currentSymmetry);
+                        occlusionScoresTMP.Add(currentOcclusionScore);
+                        cloudInlierScoresTMP.Add(currentCloudInlierScore);
+                        correspInlierScoresTMP.Add(currentCorrespondanceInlierScore);
+                        pointSymmetryScoresTMP.Add(currentPointSymmetryScores);
+                        pointOcclusionScoresTMP.Add(currentPointOcclusionScores);
+                        validSymTableTMP.Add(true);
                         symmetryCorrespTMP.AddRange(currentCorrespondances);
                     }
                 }
@@ -132,9 +132,7 @@ namespace SymmetryDetection.SymmetryDectection
             SymmetryFilteredIds = new List<int>();
             for (int i = 0; i < SymmetriesRefined.Count; i++)
             {
-                if (OcclusionScores[i] < MAX_OCCLUSION_SCORE &&
-                    CloudInlierScores[i] > MIN_CLOUD_INLIER_SCORE &&
-                    CorrespondenceInlierScores[i] > MIN_CORRESPONDANCE_INLIER_SCORE)
+                //if (OcclusionScores[i] < MAX_OCCLUSION_SCORE && CloudInlierScores[i] > MIN_CLOUD_INLIER_SCORE && CorrespondenceInlierScores[i] > MIN_CORRESPONDANCE_INLIER_SCORE)
                 {
                     SymmetryFilteredIds.Add(i);
                 }
@@ -150,7 +148,7 @@ namespace SymmetryDetection.SymmetryDectection
             }
             if (referencePoints.Any())
             {
-                MergeDuplicateReflectedSymmetries(SymmetriesRefined, referencePoints, OcclusionScores);
+                SymmetryMergedIds = MergeDuplicateReflectedSymmetries(SymmetriesRefined, referencePoints, OcclusionScores);
             }
         }
 
@@ -186,7 +184,7 @@ namespace SymmetryDetection.SymmetryDectection
                 }
             }
             BronKerbosch bk = new BronKerbosch(symmetryAdjacency);
-            List<IList<int>> cliques = bk.RunAlgorithm(2);
+            List<IList<int>> cliques = bk.RunAlgorithm(1);
             List<IList<int>> hypothesisClusters = new List<IList<int>>();
             while (cliques.Count > 0)
             {
@@ -205,7 +203,7 @@ namespace SymmetryDetection.SymmetryDectection
                 hypothesisClusters.Add(largestClique);
                 cliques.Remove(largestClique);
 
-                // Remove hyptheses belonging to the largest clique from existing cliques
+                // Remove hyptheses belonging to the largest clique from remaining cliques
                 List<IList<int>> itemsToRemove = new List<IList<int>>();
                 foreach (var clique in cliques)
                 {
@@ -239,9 +237,8 @@ namespace SymmetryDetection.SymmetryDectection
                         minScore = occlusionScores[hypothesisId];
                         bestHypothesisId = hypothesisId;
                     }
-
-                    mergedSymmetryIds.Add(bestHypothesisId);
                 }
+                mergedSymmetryIds.Add(bestHypothesisId);
             }
             return mergedSymmetryIds;
         }
@@ -365,7 +362,12 @@ namespace SymmetryDetection.SymmetryDectection
                     var origDistance = originalSymmetry.PointSignedDistance(srcPoint);
                     var neighbourDistance = originalSymmetry.PointSignedDistance(targetPos);
 
-                    if (MathF.Abs(origDistance - neighbourDistance) >= minimumSymmetryCorrespondanceDistance)
+                    // If the distance along the symmetry normal between the points of a symmetric correspondence is too small - reject
+                    //if (MathF.Abs(origDistance - neighbourDistance) < minimumSymmetryCorrespondanceDistance)
+                    //{
+                    //    continue;
+                    //}
+                    //if (MathF.Abs(refined.PointSignedDistance(srcPoint) - refined.PointSignedDistance(targetPos)) >= MIN_SYMMETRY_CORRESPONDENCE_DISTANCE)
                     {
                         float symNormalFitError = GetReflectionSymmetryNormalFitError(srcNormal, targetNormal, refined);
                         if (symNormalFitError <= maxSymmetryNormalFitError)
@@ -452,9 +454,9 @@ namespace SymmetryDetection.SymmetryDectection
                         // If the distance between the reflected source point and it's nearest neighbor is too big - reject
                         if (neighbours[0].distance <= MAX_SYMMETRY_CORRESPONDENCE_REFLECTED_DISTANCE)
                         {
-                            // Reject correspondence if normal error is too high
-                            float error = GetReflectionSymmetryNormalFitError(srcNormal, targetNormal, refinedSymmetry);
-                            if(error <= MAX_SYMMETRY_NORMAL_FIT_ERROR)
+                            // Reject correspondence if normal error is too high - not so fussed about the normal error
+                            //float error = GetReflectionSymmetryNormalFitError(srcNormal, targetNormal, refinedSymmetry);
+                            //if(error <= MAX_SYMMETRY_NORMAL_FIT_ERROR)
                             {
                                 correspondences.Add(new Correspondence(point, neighbours[0].neighbour, neighbours[0].distance));
                             }
@@ -475,8 +477,8 @@ namespace SymmetryDetection.SymmetryDectection
                         symmetryNormal.Z,
                     };
                     functor.Correspondences = correspondences;
-                    LevenbergMarquardtMLJS lm = new LevenbergMarquardtMLJS(functor);
-                    var solution = lm.Run(input);
+                    LevenbergMarquadtEJML lm = new LevenbergMarquadtEJML(functor);
+                    var solution = lm.Minimise(input);
                     //parameters are the correspondences
 
                     Vector6 solutionVector = new Vector6()
@@ -562,7 +564,7 @@ namespace SymmetryDetection.SymmetryDectection
                         symmetryScore = MathF.PI - symmetryScore;
 
                     symmetryScore = (symmetryScore - minInlierNormalAngle) / (maxInlierNormalAngle - minInlierNormalAngle);
-                    symmetryScore = symmetryScore.ClampValue(0f, 1f);
+                    //symmetryScore = symmetryScore.ClampValue(0f, 1f);
 
                     // If all checks passed - add correspondence
                     pointSymmetryScores.Add(symmetryScore);

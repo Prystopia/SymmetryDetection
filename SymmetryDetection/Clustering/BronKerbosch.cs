@@ -41,7 +41,6 @@ namespace SymmetryDetection.Clustering
             }
             else
             {
-
                 foreach (int vertex in P)
                 {
                     var newR = new List<int>(R);
