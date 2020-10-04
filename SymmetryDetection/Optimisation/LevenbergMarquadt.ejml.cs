@@ -18,7 +18,7 @@ namespace SymmetryDetection.Optimisation
         public int MaxIterations { get; set; }
         public float FunctionTolerance => 1e-12f;
         public float GradiantTolerance => 1e-12f;
-        public float Delta => 1e-8f;
+        public float Delta => 1e-7f;
 
         public float InitialLambda { get; set; }
         public LMFunction Functor { get; set; }
@@ -79,10 +79,10 @@ namespace SymmetryDetection.Optimisation
 
                  Solve();
 
-                var parameterCopy = new float[1, parameters.Length];
+                var parameterCopy = new float[parameters.Length, 1];
                 for(int i = 0; i < parameters.Length; i++)
                 {
-                    parameterCopy[0, i] = parameters[i];
+                    parameterCopy[i, 0] = parameters[i];
                 }
 
                 var candidateParams = parameterCopy.Sub(NegativeStep);
@@ -216,7 +216,10 @@ namespace SymmetryDetection.Optimisation
         private void AddToJacobianArray(float[] src, int row, int col)
         {
             //Inserts matrix 'src' into matrix 'dest' with the(0,0) of src at(row, col) in dest.
-            Jacobian[col, row] = src[0];
+            for(int i = 0; i < src.Length; i++)
+            {
+                Jacobian[i, col] = src[i];
+            }
         }
 
         private void ExtractHessianDiagonal()
