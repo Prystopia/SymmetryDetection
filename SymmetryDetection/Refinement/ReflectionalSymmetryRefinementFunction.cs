@@ -54,8 +54,8 @@ namespace SymmetryDetection.Refinement
                 Vector3 targetPoint = point.CorrespondingPoint.Position;
                 Vector3 targetNormal = point.CorrespondingPoint.Normal;
 
-                Vector3 targetPointReflected = sym.ReflectPoint(targetPoint);
-                Vector3 targetNormalReflected = sym.ReflectNormal(targetNormal);
+                Vector3 targetPointReflected = PointHelpers.ReflectPoint(targetPoint,sym);
+                Vector3 targetNormalReflected = PointHelpers.ReflectNormal(targetNormal, sym);
 
                 errors[i] = MathF.Abs(MathsHelpers.PointToPlaneSignedDistance(sourcePoint, targetPointReflected, targetNormalReflected));
             }

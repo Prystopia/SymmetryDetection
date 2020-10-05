@@ -34,11 +34,11 @@ namespace SymmetryDetection.Test
             //Not sure this is a good test as im not sure what these outputs are used for
             //float[] outputs = new float[] { 0.05f, 0.127f, 0.094f, 0.2122f, 0.2729f, 0.2665f, 0.3317f };
 
-            TestFunctor function = new TestFunctor();
-            LevenbergMarquadtEJML lm = new LevenbergMarquadtEJML(function);
-            var solution = lm.Minimise(new float[] { 0.9f, 0.2f });
+           // TestFunctor function = new TestFunctor();
+           // LevenbergMarquadtEJML lm = new LevenbergMarquadtEJML(function);
+           // var solution = lm.Minimise(new float[] { 0.9f, 0.2f });
 
-            Assert.Equal(2, solution.Length);
+//            Assert.Equal(2, solution.Length);
             //Assert.Equal(0.362f, solution[0]);
             //Assert.Equal(0.556f, solution[1]);
 

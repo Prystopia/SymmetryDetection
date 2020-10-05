@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Text;
 
 namespace SymmetryDetection.Refinement
@@ -13,11 +14,11 @@ namespace SymmetryDetection.Refinement
             List<Correspondence> remaining = new List<Correspondence>();
 
             //sort by Match Index and Distance
-            original.Sort(new CorrespondenceSorter());
+           var sortedOriginal = original.OrderBy(c => c.CorrespondingPoint.Id).ThenBy(c => c.Distance);
 
             Guid indexLast = Guid.Empty;
 
-            foreach(var correspondence in original)
+            foreach(var correspondence in sortedOriginal)
             {
                 if(correspondence.CorrespondingPoint.Id != Guid.Empty)
                 {
@@ -32,24 +33,4 @@ namespace SymmetryDetection.Refinement
             return remaining;
         }
     }
-
-    public class CorrespondenceSorter : IComparer<Correspondence>
-    {
-        public int Compare([AllowNull] Correspondence x, [AllowNull] Correspondence y)
-        {
-            if(x.CorrespondingPoint.Id.CompareTo(y.CorrespondingPoint.Id) == 0)
-            {
-                return 1;
-            }
-            else if(x.CorrespondingPoint.Id == y.CorrespondingPoint.Id && x.Distance < y.Distance)
-            {
-                return 1;
-            }
-            else
-            {
-                return 0;
-            }
-        }
-    }
-
 }

@@ -1,10 +1,11 @@
 ﻿using System;
+using SymmetryDetection.Interfaces;
 namespace SymmetryDetection.Optimisation
 {
-    public class LinearSolver
+    public class LinearSolverHouseHolder : ILinearSolver
     {
         //https://github.com/lessthanoptimal/ejml/blob/e838418796934dd61e9f63ccb57e652653841088/main/ejml-ddense/src/org/ejml/dense/row/linsol/qr/LinearSolverQrHouseCol_DDRM.java#L48
-        protected QRDecomposer decomposer;
+        protected IDecompositionHandler decomposer;
 
         protected float[,] a = new float[1, 1];
         protected float[,] temp = new float[1, 1];
@@ -20,7 +21,7 @@ namespace SymmetryDetection.Optimisation
         protected int numRows;
         protected int numCols;
 
-        public LinearSolver(QRDecomposer decomposer)
+        public LinearSolverHouseHolder(IDecompositionHandler decomposer)
         {
             this.decomposer = decomposer;
         }
@@ -60,12 +61,6 @@ namespace SymmetryDetection.Optimisation
             decomposer.GetR(R, true);
             return true;
         }
-
-        //@Override
-        //public /**/double quality()
-        //{
-        //    return SpecializedOps_DDRM.qualityTriangular(R);
-        //}
 
         /**
          * Solves for X using the QR decomposition.

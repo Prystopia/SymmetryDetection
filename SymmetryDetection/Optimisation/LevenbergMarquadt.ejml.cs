@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using SymmetryDetection.Extensions;
+using SymmetryDetection.Interfaces;
 using SymmetryDetection.Refinement;
 
 namespace SymmetryDetection.Optimisation
@@ -34,11 +35,14 @@ namespace SymmetryDetection.Optimisation
         private float[,] Residuals { get; set; }
         private float[,] Jacobian { get; set; }
 
-        public LevenbergMarquadtEJML(LMFunction functor, float initialLambda = 1)
+        private ILinearSolver Solver { get; set; }
+
+        public LevenbergMarquadtEJML(LMFunction functor, ILinearSolver solver, float initialLambda = 1)
         {
             this.MaxIterations = 100;
             this.Functor = functor;
             this.InitialLambda = initialLambda;
+            this.Solver = solver;
             this.Configure();
         }
 
@@ -150,18 +154,10 @@ namespace SymmetryDetection.Optimisation
         }
         public bool Solve()
         {
-            //var x = new float[a.GetLength(1), b.GetLength(1)];
-
-            // LinearSolverFactory_DDRM.general(a.numRows, a.numCols);
-
-            QRDecomposer decomposer = new QRDecomposer();
-            LinearSolver solver = new LinearSolver(decomposer);
-            // make sure the inputs 'a' and 'b' are not modified
-
-            if (!solver.SetA(HessianApprox))
+            if (!Solver.SetA(HessianApprox))
                 return false;
 
-            NegativeStep = solver.Solve(Gradient);
+            NegativeStep = Solver.Solve(Gradient);
             return true;
         }
         

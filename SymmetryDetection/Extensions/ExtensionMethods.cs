@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using SymmetryDetection.DataTypes;
+using SymmetryDetection.Interfaces;
 using SymmetryDetection.SymmetryDectection;
 using System;
 using System.Collections.Generic;
@@ -120,7 +121,7 @@ namespace SymmetryDetection.Extensions
             return (MathF.PI / 180) * angle;
         }
 
-        public static string GetExportFile(this List<ReflectionalSymmetry> symmetries)
+        public static string GetExportFile(this List<ISymmetry> symmetries)
         {
             StringBuilder sb = new StringBuilder();
 
