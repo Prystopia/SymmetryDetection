@@ -22,5 +22,10 @@ namespace SymmetryDetection.SymmetryDectection
         {
             Origin = PointHelpers.ProjectPoint(point, this);
         }
+        public override string ToString()
+        {
+            var d = ((Normal.X * Origin.X) + (Normal.Y * Origin.Y) + (Normal.Z * Origin.Z));
+            return $"({MathF.Round(d,2)} - {MathF.Round(Normal.X, 2)} * (x - {Math.Round(Origin.X, 2)}) - {MathF.Round(Normal.Y, 2)} * (y - {MathF.Round(Origin.Y, 2)}) - {MathF.Round(Origin.Z * Normal.Z, 2)}) / {MathF.Round(Normal.Z, 2)})";
+        }
     }
 }

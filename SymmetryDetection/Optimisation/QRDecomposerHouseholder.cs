@@ -1,14 +1,22 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading;
+using SymmetryDetection.Extensions;
+using SymmetryDetection.Helpers;
 using SymmetryDetection.Interfaces;
+
 namespace SymmetryDetection.Optimisation
 {
     public class QRDecomposerHouseHolder : IDecompositionHandler
     {
         //https://github.com/lessthanoptimal/ejml/blob/e838418796934dd61e9f63ccb57e652653841088/main/ejml-ddense/src/org/ejml/dense/row/decomposition/qr/QRDecompositionHouseholderColumn_DDRM.java#L37
-        protected float[][] dataQR; // [ column][ row ]
+        private double[,] A; // [ column][ row ]
+        private double[,] R;
+        private double[,] Q;
 
         // used internally to store temporary data
-        protected float[] v;
+        protected double[] v;
 
         // dimension of the decomposed matrices
         protected int numCols; // this is 'n'
@@ -16,13 +24,13 @@ namespace SymmetryDetection.Optimisation
         protected int minLength;
 
         // the computed gamma for Q_k matrix
-        protected float[] gammas;
+        private double[] gammas;
         // local variables
-        protected float gamma;
-        protected float tau;
+        private double gamma;
+        private double tau;
 
         // did it encounter an error?
-        protected bool error;
+        private bool error;
 
         public void SetExpectedMaxSize(int numRows, int numCols)
         {
@@ -31,37 +39,37 @@ namespace SymmetryDetection.Optimisation
             minLength = Math.Min(numCols, numRows);
             int maxLength = Math.Max(numCols, numRows);
 
-            if (dataQR == null || dataQR.GetLength(0) < numCols || dataQR[0].Length < numRows)
-            {
-                dataQR = new float[numCols][];
+            //initialise matrices
+            R = new double[numRows, numCols];
 
-                for (int i = 0; i < numCols; i++)
-                {
-                    dataQR[i] = new float[numRows];
-                }
-
-                v = new float[maxLength];
-                gammas = new float[minLength];
-            }
-
-            if (v.Length < maxLength)
-            {
-                v = new float[maxLength];
-            }
-            if (gammas.Length < minLength)
-            {
-                gammas = new float[minLength];
-            }
+            Q = Identity(numRows, numRows);
+            v = new double[maxLength];
+            gammas = new double[minLength];
         }
 
-        /**
-         * Returns the combined QR matrix in a 2D array format that is column major.
-         *
-         * @return The QR matrix in a 2D matrix column major format. [ column ][ row ]
-         */
-        public float[][] GetQR()
+
+        public double[,] GetQR()
         {
-            return dataQR;
+            return A;
+        }
+
+        public double[,] GetQ()
+        {
+            return Q;
+        }
+
+        private static double[,] Identity(int numRows, int numCols)
+        {
+            double[,] ret = new double[numRows, numCols];
+
+            int small = numRows < numCols ? numRows : numCols;
+
+            for (int i = 0; i < small; i++)
+            {
+                ret[i, i] = 1f;
+            }
+
+            return ret;
         }
 
         /**
@@ -71,51 +79,9 @@ namespace SymmetryDetection.Optimisation
          * @param R Storage for upper triangular matrix.
          * @param compact If true then a compact matrix is expected.
          */
-        public float[,] GetR(float[,] R, bool compact)
+        public double[,] GetR()
         {
-            if (compact)
-            {
-                R = CheckZerosLT(R, minLength, numCols);
-            }
-            else
-            {
-                R = CheckZerosLT(R, numRows, numCols);
-            }
-
-            for (int j = 0; j < numCols; j++)
-            {
-                float[] colR = dataQR[j];
-                int l = Math.Min(j, numRows - 1);
-                for (int i = 0; i <= l; i++)
-                {
-                    float val = colR[i];
-                    R[i, j] = val;
-                }
-            }
-
             return R;
-        }
-
-        private static float[,] CheckZerosLT(float[,] A, int numRows, int numCols)
-        {
-            if (A == null)
-            {
-                A = new float[numRows, numCols];
-            }
-            else if (numRows != A.GetLength(0) || numCols != A.GetLength(1))
-            {
-                A = new float[numRows, numCols]; 
-            }
-
-            for (int i = 0; i < numRows; i++)
-            {
-                for (int j = 0; j < numCols; j++)
-                {
-                    A[i, j] = 0;
-                }
-            }
-
-            return A;
         }
 
         /**
@@ -130,40 +96,52 @@ namespace SymmetryDetection.Optimisation
          * to it.
          * </p>
          */
-        public bool Decompose(float[,] A)
+        public bool Decompose(ref double[,] A)
         {
             SetExpectedMaxSize(A.GetLength(0), A.GetLength(1));
 
-            ConvertToColumnMajor(A);
+            this.A = this.R = A;
 
             error = false;
 
             for (int j = 0; j < minLength; j++)
             {
-                Householder(j);
-                UpdateA(j);
+                HouseholderR(j);
+                //UpdateA(j);
             }
 
-            return !error;
+            return error;
         }
 
-        /**
-         * Converts the standard row-major matrix into a column-major vector
-         * that is advantageous for this problem.
-         *
-         * @param A original matrix that is to be decomposed.
-         */
-        protected void ConvertToColumnMajor(float[,] A)
-        {
-            for (int x = 0; x < numCols; x++)
-            {
-                float[] colQ = dataQR[x];
-                for (int y = 0; y < numRows; y++)
-                {
-                    colQ[y] = A[y, x];
-                }
-            }
-        }
+        ///**
+        // * Converts the standard row-major matrix into a column-major vector
+        // * that is advantageous for this problem.
+        // *
+        // * @param A original matrix that is to be decomposed.
+        // */
+        //private void ConvertToColumnMajor(double[,] A)
+        //{
+        //    for (int x = 0; x < numCols; x++)
+        //    {
+        //        for (int y = 0; y < numRows; y++)
+        //        {
+        //            dataQR[x, y] = A[y, x];
+        //        }
+        //    }
+        //}
+
+        //private double[,] ConvertToRowMajor(double[,] QR)
+        //{
+        //    double[,] newQR = new double[QR.GetLength(1), QR.GetLength(0)];
+        //    for (int x = 0; x < numRows; x++)
+        //    {
+        //        for (int y = 0; y < numCols; y++)
+        //        {
+        //            newQR[x, y] = QR[y, x];
+        //        }
+        //    }
+        //    return newQR;
+        //}
 
         /**
          * <p>
@@ -180,13 +158,13 @@ namespace SymmetryDetection.Optimisation
          *
          * @param j Which submatrix to work off of.
          */
-        protected void Householder(int j)
+        protected void HouseholderR(int col)
         {
-            float[] u = dataQR[j];
+            //get Range of elements in column based on index - 
+            double[] column = A.GetColumn(col).GetRange(col);
 
-            // find the largest value in this column
-            // this is used to normalize the column and mitigate overflow/underflow
-            float max = FindMax(u, j, numRows - j);
+            //find the largest value in this column
+            double max = column.Select(x => Math.Abs(x)).Max();
 
             if (max == 0.0)
             {
@@ -195,62 +173,104 @@ namespace SymmetryDetection.Optimisation
             }
             else
             {
-                // computes tau and normalizes u by max
-                tau = ComputeTauAndDivide(j, numRows, u, max);
 
-                // divide u by u_0
-                float u_0 = u[j] + tau;
-                DivideElements(j + 1, numRows, u, u_0);
+                var x = column.Divide(max);
+                var norm = x.SquaredNorm();
 
-                gamma = u_0 / tau;
-                tau *= max;
+                var u = x;
 
-                u[j] = -tau;
+                if(u[0] >= 0)
+                {
+                    u[0] += norm;
+                }
+                else
+                {
+                    u[0] -= norm;
+                }
+
+                //transform u array into a single columned matrix to allow calculations and transposition
+                var uTransposed = new double[1, column.Length];
+                var uStandard = new double[column.Length, 1];
+                for (int i = 0; i < column.Length; i++)
+                {
+                    uTransposed[0, i] = u[i];
+                    uStandard[i, 0] = u[i];
+                }
+
+                double beta = 2 / (uTransposed.Multiply(uStandard)[0,0]);
+
+                double[,] houseHolderReflectionCoefficient = uStandard.Multiply(beta).Multiply(uTransposed);
+
+                //need to be careful we are only updating the sub-matrix of QR[startIndex:, col:]
+                var subHouseholderMatrix = A.SubMatrix(col, A.GetLength(0), col, A.GetLength(1));
+                subHouseholderMatrix = subHouseholderMatrix.Subtract(houseHolderReflectionCoefficient.Multiply(subHouseholderMatrix));
+
+                //apply back to R matrix;
+                for (int i = col; i < numRows; i++)
+                {
+                    for (int j = col; j < numCols; j++)
+                    {
+                        double val = subHouseholderMatrix[i - col, j - col];
+                        if (val >= -ExtensionMethods.EPSILON && val <= ExtensionMethods.EPSILON)
+                        {
+                            val = 0;
+                        }
+                        R[i, j] = val;
+                    }
+                }
+                HouseholderQ(col, uStandard, uTransposed);
             }
 
-            gammas[j] = gamma;
+            //gammas[col] = gamma;
         }
 
-        private static void DivideElements(int j, int numRows, float[] u, float u_0)
+        private void HouseholderQ(int col, double[,] u, double[,] uTransposed)
         {
-            for (int i = j; i < numRows; i++)
+            double beta = 2 / Math.Pow(u.GetColumn(col).SquaredNorm(), 2);
+            int m = numRows;
+            var qSubMatrix = Q.SubMatrix(0, Q.GetLength(0), col, Q.GetLength(1));
+            var qCoefficient = u.Multiply(uTransposed);
+
+            qSubMatrix = qSubMatrix.Subtract(qCoefficient.Multiply(qSubMatrix).Multiply(beta));
+            for (int i = 0; i < Q.GetLength(0); i++)
             {
-                u[i] /= u_0;
+                for (int j = col; j < Q.GetLength(1); j++)
+                {
+                    double val = qSubMatrix[i, j - col];
+                    if (val >= -ExtensionMethods.EPSILON && val <= ExtensionMethods.EPSILON)
+                    {
+                        val = 0;
+                    }
+                    Q[i, j] = val;
+                }
+            }
+
+        }
+
+        private static void DivideElements(int startIndex, int endIndex, double[] u, double coefficient)
+        {
+            for (int i = startIndex; i < endIndex; i++)
+            {
+                u[i] /= coefficient;
             }
         }
 
-        private static float ComputeTauAndDivide(int j, int numRows, float[] u, float max)
+        private static double ComputeTauAndDivide(int j, int numRows, double[] u, double max)
         {
-            float tau = 0;
+            double tau = 0;
             for (int i = j; i < numRows; i++)
             {
-                float d = u[i] /= max;
+                double d = u[i] /= max;
                 tau += d * d;
             }
-            tau = MathF.Sqrt(tau);
+            tau = Math.Sqrt(tau);
 
             if (u[j] < 0)
                 tau = -tau;
 
             return tau;
         }
-
-        private static float FindMax(float[] u, int startU, int length)
-        {
-            float max = -1;
-
-            int index = startU;
-            int stopIndex = startU + length;
-            for (; index < stopIndex; index++)
-            {
-                float val = u[index];
-                val = (val < 0.0) ? -val : val;
-                if (val > max)
-                    max = val;
-            }
-
-            return max;
-        }
+       
 
         /**
          * <p>
@@ -261,31 +281,31 @@ namespace SymmetryDetection.Optimisation
          *
          * @param w The submatrix.
          */
-        protected void UpdateA(int w)
-        {
-            float[] u = dataQR[w];
+        //protected void UpdateA(int w)
+        //{
+        //    double[] u = dataQR.GetRow(w);
 
-            for (int j = w + 1; j < numCols; j++)
-            {
+        //    for (int j = w + 1; j < numCols; j++)
+        //    {
 
-                float[] colQ = dataQR[j];
-                float val = colQ[w];
+        //        double[] colQ = dataQR.GetRow(j);
+        //        double val = colQ[w];
 
-                for (int k = w + 1; k < numRows; k++)
-                {
-                    val += u[k] * colQ[k];
-                }
-                val *= gamma;
+        //        for (int k = w + 1; k < numRows; k++)
+        //        {
+        //            val += u[k] * colQ[k];
+        //        }
+        //        val *= gamma;
 
-                colQ[w] -= val;
-                for (int i = w + 1; i < numRows; i++)
-                {
-                    colQ[i] -= u[i] * val;
-                }
-            }
-        }
+        //        dataQR[j, w] -= val;
+        //        for (int i = w + 1; i < numRows; i++)
+        //        {
+        //            dataQR[j, i] -= u[i] * val;
+        //        }
+        //    }
+        //}
 
-        public float[] GetGammas()
+        public double[] GetGammas()
         {
             return gammas;
         }

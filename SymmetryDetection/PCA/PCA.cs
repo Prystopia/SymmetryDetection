@@ -8,7 +8,7 @@ using System.Text;
 
 namespace SymmetryDetection.SymmetryDectection
 {
-    public class PCA
+    public class PCA /*: IPrincipalComponentsAnalysis*/
     {
         public PointCloud Cloud { get; set; }
         public PointCloud DemeanedCloud { get; set; }

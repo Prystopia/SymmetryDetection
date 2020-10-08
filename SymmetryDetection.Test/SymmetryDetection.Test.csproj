@@ -17,4 +17,10 @@
   <ItemGroup>
     <ProjectReference Include="..\SymmetryDetection\SymmetryDetection.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="alglibnet2">
+      <HintPath>..\SymmetryDetection\References\alglibnet2.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 </Project>

@@ -4,7 +4,7 @@ namespace SymmetryDetection.Interfaces
     public interface ILinearSolver
     {
 
-        bool SetA(float[,] A);
-        float[,] Solve(float[,] B);
+        bool SetA(double[,] A);
+        double[,] Solve(double[,] B);
     }
 }

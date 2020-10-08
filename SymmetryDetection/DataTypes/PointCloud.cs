@@ -44,22 +44,26 @@ namespace SymmetryDetection.DataTypes
             return newCloud;
         }
 
-        public List<(PointXYZRGBNormal neighbour, float distanceSquared)> GetNeighbours(PointXYZRGBNormal initial, float? searchRadius = 1)
+        public List<(PointXYZRGBNormal neighbour, float distanceSquared, int index)> GetNeighbours(PointXYZRGBNormal initial, float? searchRadius = 1)
         {
-            List<(PointXYZRGBNormal neighbour, float distanceSquared)> neighbourPoints = new List<(PointXYZRGBNormal neighbour, float distanceSquared)>();
+            int count = 0;
+            List<(PointXYZRGBNormal neighbour, float distanceSquared, int index)> neighbourPoints = new List<(PointXYZRGBNormal neighbour, float distanceSquared, int index)>();
             foreach (var point2 in Points)
             {
-                var distance = point2.GetDistance(initial.Position);
-                if (!searchRadius.HasValue || distance <= searchRadius)
+                if (initial.Id != point2.Id)
                 {
-                    neighbourPoints.Add((point2, distance));
+                    var distance = point2.GetDistance(initial.Position);
+                    if (!searchRadius.HasValue || distance <= searchRadius)
+                    {
+                        neighbourPoints.Add((point2, distance, count));
+                    }
                 }
-               
+                count++;
             }
             return neighbourPoints;
         }
 
-        public List<(PointXYZRGBNormal neighbour, float distance)> GetClosetNeighbours(PointXYZRGBNormal initial, int neighboursToReturn)
+        public List<(PointXYZRGBNormal neighbour, float distance, int index)> GetClosetNeighbours(PointXYZRGBNormal initial, int neighboursToReturn)
         {
             var neighbours = GetNeighbours(initial, null);
             var orderedNeighbours = neighbours.OrderBy(n => n.distanceSquared);
@@ -87,7 +91,7 @@ namespace SymmetryDetection.DataTypes
             }
 
         }
-        private bool IsBoundaryPoint(PointXYZRGBNormal point, List<(PointXYZRGBNormal neighbour, float distanceSquared)> neighbours)
+        private bool IsBoundaryPoint(PointXYZRGBNormal point, List<(PointXYZRGBNormal neighbour, float distanceSquared, int index)> neighbours)
         {
             bool isBoundary = false;
             List<Vector3> projectedNeighbours = new List<Vector3>();

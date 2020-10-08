@@ -11,7 +11,7 @@ namespace SymmetryDetection.Refinement
 {
     public interface LMFunction
     {
-        float[] Function(float[] input);
+        double[] Function(double[] input);
         //int df(float[] input, float[,] fjac);
         int InputSize { get; }
         int ValuesSize { get; }
@@ -29,17 +29,17 @@ namespace SymmetryDetection.Refinement
         }
 
         //input data could be the correspondences [src point, target point] - however we're allowing more flexibility in the function to minimise but storing data as part of this class
-        public float[] Function(float[] input)
+        public double[] Function(double[] input)
         {
-            float[] errors = new float[Correspondences.Count];
+            double[] errors = new double[Correspondences.Count];
             Vector6 pos = new Vector6()
             {
-                X = input[0],
-                Y = input[1],
-                Z = input[2],
-                A = input[3],
-                B = input[4],
-                C = input[5]
+                X = (float)input[0],
+                Y = (float)input[1],
+                Z = (float)input[2],
+                A = (float)input[3],
+                B = (float)input[4],
+                C = (float)input[5]
             };
             //this is our initial guess ^^
 

@@ -17,40 +17,40 @@ namespace SymmetryDetection.Optimisation
         //hdiag is the diagonal of the identity matrix
 
         public int MaxIterations { get; set; }
-        public float FunctionTolerance => 1e-12f;
-        public float GradiantTolerance => 1e-12f;
-        public float Delta => 1e-7f;
+        public double FunctionTolerance => 1e-12f;
+        public double GradiantTolerance => 1e-12f;
+        public double Delta => 1e-8f;
 
-        public float InitialLambda { get; set; }
+        public double InitialLambda { get; set; }
         public LMFunction Functor { get; set; }
-        public  float InitialCost { get; set; }
-        public float FinalCost { get; set; }
+        public double InitialCost { get; set; }
+        public double FinalCost { get; set; }
 
-        private float[,] Gradient { get; set; }
-        private float[,] HessianApprox { get; set; }
-        private float[] HessianDiagonal { get; set; }
-        private float[,] NegativeStep { get; set; }
-        private float[] Temp0 { get; set; }
-        private float[] Temp1 { get; set; }
-        private float[,] Residuals { get; set; }
-        private float[,] Jacobian { get; set; }
+        private double[,] Gradient { get; set; }
+        private double[,] HessianApprox { get; set; }
+        private double[] HessianDiagonal { get; set; }
+        private double[,] NegativeStep { get; set; }
+        private double[] Temp0 { get; set; }
+        private double[] Temp1 { get; set; }
+        private double[,] Residuals { get; set; }
+        private double[,] Jacobian { get; set; }
 
         private ILinearSolver Solver { get; set; }
 
-        public LevenbergMarquadtEJML(LMFunction functor, ILinearSolver solver, float initialLambda = 1)
+        public LevenbergMarquadtEJML(LMFunction functor, ILinearSolver solver, double initialLambda = 1)
         {
-            this.MaxIterations = 100;
+            this.MaxIterations = 400;
             this.Functor = functor;
             this.InitialLambda = initialLambda;
             this.Solver = solver;
             this.Configure();
         }
 
-        public float[] Minimise(float[] parameters)
+        public double[] Minimise(double[] parameters)
         {
-            float previousCost = InitialCost = CalculateError(parameters);
+            double previousCost = InitialCost = CalculateError(parameters);
 
-            float lambda = InitialLambda;
+            double lambda = InitialLambda;
             //determines whether we should re-compute the jacobian matrix;
             bool computeHessian = true;
 
@@ -64,7 +64,7 @@ namespace SymmetryDetection.Optimisation
                     bool converged = true;
                     for(int i = 0; i < Functor.InputSize; i++)
                     {
-                        if(MathF.Abs(Gradient[i, 0]) > GradiantTolerance)
+                        if(Math.Abs(Gradient[i, 0]) > GradiantTolerance)
                         {
                             converged = false;
                             break;
@@ -86,15 +86,15 @@ namespace SymmetryDetection.Optimisation
                     return parameters;
                 }
 
-                var parameterCopy = new float[parameters.Length, 1];
+                var parameterCopy = new double[parameters.Length, 1];
                 for(int i = 0; i < parameters.Length; i++)
                 {
                     parameterCopy[i, 0] = parameters[i];
                 }
 
-                var candidateParams = parameterCopy.Sub(NegativeStep);
+                var candidateParams = parameterCopy.Subtract(NegativeStep);
 
-                float cost = CalculateError(candidateParams.To1DArray());
+                double cost = CalculateError(candidateParams.To1DArray());
 
                 if(cost <= previousCost)
                 {
@@ -121,16 +121,16 @@ namespace SymmetryDetection.Optimisation
 
         private void Configure()
         {
-            Gradient = new float[Functor.InputSize, 1];
-            HessianApprox = new float[Functor.InputSize, Functor.InputSize];
+            Gradient = new double[Functor.InputSize, 1];
+            HessianApprox = new double[Functor.InputSize, Functor.InputSize];
 
-            NegativeStep = new float[Functor.InputSize, 1];
+            NegativeStep = new double[Functor.InputSize, 1];
 
-            Temp0 = new float[Functor.ValuesSize];
-            Temp1 = new float[Functor.ValuesSize];
-            Residuals = new float[Functor.ValuesSize, 1];
-            Jacobian = new float[Functor.ValuesSize, Functor.InputSize];
-            HessianDiagonal = new float[Functor.InputSize];
+            Temp0 = new double[Functor.ValuesSize];
+            Temp1 = new double[Functor.ValuesSize];
+            Residuals = new double[Functor.ValuesSize, 1];
+            Jacobian = new double[Functor.ValuesSize, Functor.InputSize];
+            HessianDiagonal = new double[Functor.InputSize];
         }
 
         /// <summary>
@@ -138,11 +138,11 @@ namespace SymmetryDetection.Optimisation
         /// </summary>
         /// <param name="parameters"></param>
         /// <returns></returns>
-        private float CalculateError(float[] parameters)
+        private double CalculateError(double[] parameters)
         {
             var errorArray = Functor.Function(parameters);
 
-            float error = errorArray.FrobiusNorm();
+            double error = errorArray.SquaredNorm();
 
             //ensure the values are copied correctly
             for (int i = 0; i < errorArray.Length; i++)
@@ -161,7 +161,7 @@ namespace SymmetryDetection.Optimisation
             return true;
         }
         
-        private void ComputeGradientAndHessian(float[] parameters)
+        private void ComputeGradientAndHessian(double[] parameters)
         {
             var errors = Functor.Function(parameters);
 
@@ -171,15 +171,15 @@ namespace SymmetryDetection.Optimisation
             }
 
             ComputeNumericalJacobian(parameters);
-            Gradient = Jacobian.Transpose().MatrixMultiply(Residuals);
+            Gradient = Jacobian.Transpose().Multiply(Residuals);
             //Need to check this
-            HessianApprox = Jacobian.Transpose().MatrixMultiply(Jacobian);
+            HessianApprox = Jacobian.Transpose().Multiply(Jacobian);
             ExtractHessianDiagonal();
         }
 
-        private void ComputeNumericalJacobian(float[] parameters)
+        private void ComputeNumericalJacobian(double[] parameters)
         {
-            float invDelta = 1 / Delta;
+            double invDelta = 1 / Delta;
 
             Temp0 = Functor.Function(parameters);
 
@@ -196,11 +196,11 @@ namespace SymmetryDetection.Optimisation
 
         }
 
-        private float[] ComputeDifference(float alpha, float[] val1, float beta, float[] val2)
+        private double[] ComputeDifference(double alpha, double[] val1, double beta, double[] val2)
         {
             //c = α * a + β * b
             //cij = α * aij + β * bij
-            float[] newArray = new float[val1.Length];
+            double[] newArray = new double[val1.Length];
             for(int i = 0; i < val1.Length; i++)
             {
                 newArray[i] = (alpha * val1[i]) + (beta * val2[i]);
@@ -209,7 +209,7 @@ namespace SymmetryDetection.Optimisation
             return newArray;
         }
 
-        private void AddToJacobianArray(float[] src, int row, int col)
+        private void AddToJacobianArray(double[] src, int row, int col)
         {
             //Inserts matrix 'src' into matrix 'dest' with the(0,0) of src at(row, col) in dest.
             for(int i = 0; i < src.Length; i++)

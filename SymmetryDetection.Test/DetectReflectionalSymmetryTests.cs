@@ -14,6 +14,7 @@ namespace SymmetryDetection.Test
         private Mock<IFileType> FileTypeMock { get; set; }
 
         private Mock<ISymmetryDetector> DetectorMock { get; set; }
+        private Mock<ISymmetryExporter> ExporterMock { get; set; }
         public DetectReflectionalSymmetryTests()
         {
             this.Setup();
@@ -22,21 +23,9 @@ namespace SymmetryDetection.Test
         private void Setup()
         {
             this.FileTypeMock = new Mock<IFileType>();
+            this.ExporterMock = new Mock<ISymmetryExporter>();
             this.Service = new SymmetryDetectionHandler(this.FileTypeMock.Object, new List<ISymmetryDetector> { DetectorMock.Object });
         }
-
-        [Fact]
-        public void GetExportFile_Returns_Non_Empty_String()
-        {
-            this.Service.Symmetries = new List<ISymmetry>()
-            {
-                new ReflectionalSymmetry(new Vector3(1,1,1), new Vector3(1,1,1))
-            };
-            var result = this.Service.GetExportFile();
-            Assert.NotNull(result);
-            Assert.NotEmpty(result);
-        }
-
         //[Fact]
         //DetectReflectionalSymmetries
     }

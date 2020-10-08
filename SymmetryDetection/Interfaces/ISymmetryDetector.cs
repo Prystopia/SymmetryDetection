@@ -19,10 +19,9 @@ namespace SymmetryDetection.Interfaces
         void Detect();
         void Filter();
         void Merge();
-        List<int> MergeDuplicateReflectedSymmetries(List<ISymmetry> symmetries, List<Vector3> symmetryReferencePoints, List<float> occlusionScores);
-        List<ISymmetry> GetInitialReflectionSymmetries(PointCloud cloud);
-        List<Vector3> GenerateSpherePoints(int numSegments);
-        bool RefineSymmetryPosition(PointCloud cloud, ISymmetry originalSymmetry);
+        List<int> MergeDuplicateSymmetries(List<ISymmetry> symmetries, List<int> indices, List<Vector3> symmetryReferencePoints, List<float> occlusionScores);
+        List<ISymmetry> GetInitialSymmetries(PointCloud cloud);
+        ISymmetry RefineSymmetryPosition(PointCloud cloud, ISymmetry originalSymmetry);
         bool RefineGlobalSymmetryPosition(PointCloud cloud, ISymmetry symmetry);
         void CalculateSymmetryPointSymmetryScores(PointCloud cloud, ISymmetry symmetry, out List<float> pointSymmetryScores, out List<Correspondence> correspondences);
     }

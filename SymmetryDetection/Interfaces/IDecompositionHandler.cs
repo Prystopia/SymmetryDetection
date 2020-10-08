@@ -3,10 +3,11 @@ namespace SymmetryDetection.Interfaces
 {
     public interface IDecompositionHandler
     {
-        bool Decompose(float[,] original);
+        bool Decompose(ref double[,] original);
 
-        float[][] GetQR();
-        float[] GetGammas();
-        float[,] GetR(float[,] R, bool compact);
+        double[,] GetQR();
+        double[] GetGammas();
+        double[,] GetR();
+        double[,] GetQ();
     }
 }

@@ -7,11 +7,15 @@
 
   <ItemGroup>
     <PackageReference Include="Accord.Math" Version="3.8.0" />
-    <PackageReference Include="alglib.net" Version="3.16.0" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="FileTypes\PLY\" />
-    <Folder Include="Helpers\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="alglibnet2">
+      <HintPath>References\alglibnet2.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

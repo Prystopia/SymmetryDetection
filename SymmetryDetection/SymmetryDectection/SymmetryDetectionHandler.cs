@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Security.Principal;
 using System.Text;
 
 namespace SymmetryDetection.SymmetryDectection
@@ -20,19 +21,15 @@ namespace SymmetryDetection.SymmetryDectection
         private IEnumerable<ISymmetryDetector> SymmetryDetectors { get; set; }
         public List<ISymmetry> Symmetries { get; set; }
 
-        public SymmetryDetectionHandler(IFileType file, IEnumerable<ISymmetryDetector> symmetryDetectors)
+        public SymmetryDetectionHandler(IFileType file, IEnumerable<ISymmetryDetector> symmetryDetectors/*, IPrincipalComponentsAnalyser pca, ISymmetryProperties properties*/)
         {
             Cloud = file.ConvertToPointCloud();
             ComponentsAnalysis = new PCA(Cloud);
             SymmetryDetectors = symmetryDetectors;
+            Symmetries = new List<ISymmetry>();
         }
 
-        public string GetExportFile()
-        {
-            return Symmetries.GetExportFile();
-        }
-
-        public void DetectReflectionalSymmetries()
+        public void DetectSymmetries()
         {
             var cloud = ComponentsAnalysis.DemeanedCloud;
             List<List<int>> segments = new List<List<int>>();
@@ -48,7 +45,7 @@ namespace SymmetryDetection.SymmetryDectection
                 foreach (var detector in SymmetryDetectors)
                 {
                     List<PointCloud> segmentClouds = new List<PointCloud>();
-                    List<List<ISymmetry>> symmetryTEMP = new List<List<ISymmetry>>();
+                    List<List<ISymmetry>> detectorSymmetries = new List<List<ISymmetry>>();
                     List<List<int>> symmetryFilteredIdsTEMP = new List<List<int>>();
                     List<List<int>> symmetryMergedIdsTEMP = new List<List<int>>();
                     List<List<float>> occlusionScoresTEMP = new List<List<float>>();
@@ -63,11 +60,11 @@ namespace SymmetryDetection.SymmetryDectection
                         detector.SetPCA(new PCA(segmentClouds[i]));
 
                         detector.Detect();
-                        detector.Filter();
+                        detector.Filter(); // filter based on score
                         detector.Merge();
 
                         //Replication of GetSymmetries Method
-                        symmetryTEMP.Add(detector.SymmetriesRefined);
+                        detectorSymmetries.Add(detector.SymmetriesRefined);
                         symmetryFilteredIdsTEMP.Add(detector.SymmetryFilteredIds);
                         symmetryMergedIdsTEMP.Add(detector.SymmetryMergedIds);
 
@@ -88,16 +85,21 @@ namespace SymmetryDetection.SymmetryDectection
                         for (int j = 0; j < symmetryMergedIdsTEMP[i].Count; j++)
                         {
                             int symId = symmetryMergedIdsTEMP[i][j];
-                            symmetryLinear.Add(symmetryTEMP[i][symId]);
+                            symmetryLinear.Add(detectorSymmetries[i][symId]);
                             symmetryLinearMap.Add((i, symId));
                             supportSizesLinear.Add(segmentClouds[i].Points.Count);
                             referencePointsLinear.Add(segmentClouds[i].Mean);
                             occlusionScoresLinear.Add(occlusionScoresTEMP[i][symId]);
                         }
                     }
-                    
+
+                    List<int> indices = new List<int>();
+                    for(int i = 0; i < symmetryLinear.Count; i++)
+                    {
+                        indices.Add(i);
+                    }
                     //merge symmetries for the entire cloud
-                    List<int> symmetryMergedGlobalIdsLinear = detector.MergeDuplicateReflectedSymmetries(symmetryLinear, referencePointsLinear, occlusionScoresLinear);
+                    List<int> symmetryMergedGlobalIdsLinear = detector.MergeDuplicateSymmetries(symmetryLinear, indices, referencePointsLinear, occlusionScoresLinear);
 
                     //construct Final output
                     foreach (var merged in symmetryMergedGlobalIdsLinear)
@@ -106,15 +108,15 @@ namespace SymmetryDetection.SymmetryDectection
                         int segId = symmetryLinearMap[merged].Item1;
                         int symId = symmetryLinearMap[merged].Item2;
 
-                        Symmetries.Add(symmetryTEMP[segId][symId]);
+                        Symmetries.Add(detectorSymmetries[segId][symId]);
                         supportSegments.Add(segments[segId]);
                     }
                 }
             }
-            UnMeanCloud();
+            DeMeanSymmetries();
         }
 
-        private void UnMeanCloud()
+        private void DeMeanSymmetries()
         {
             foreach (var symmetry in Symmetries)
             {
