@@ -68,12 +68,6 @@ namespace SymmetryDetection.SymmetryDectection
             SymmetryMergedIds = new List<int>();
 
             SymmetriesInitial = GetInitialSymmetries(Cloud);
-            ////this returns just the correct planes for a unit cube
-            //List<int> customFilter = new List<int>
-            //{
-            //    0, 4, 18, 30, 34, 39, 44, 48, 53
-            //};
-            //SymmetriesInitial = SymmetriesInitial.Where((x, i) => customFilter.Contains(i)).ToList();
 
             List<ISymmetry> symmetriesTMP = new List<ISymmetry>();
             List<float> occlusionScoresTMP = new List<float>();
@@ -163,7 +157,7 @@ namespace SymmetryDetection.SymmetryDectection
             }
             if (referencePoints.Any())
             {
-                SymmetryMergedIds = MergeDuplicateReflectedSymmetries(SymmetriesRefined, SymmetryFilteredIds, referencePoints, OcclusionScores);
+                SymmetryMergedIds = MergeDuplicateSymmetries(SymmetriesRefined, SymmetryFilteredIds, referencePoints, OcclusionScores);
             }
         }
 

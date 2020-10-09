@@ -1,4 +1,5 @@
 ﻿using SymmetryDetection.Exporters;
+using SymmetryDetection.FileTypes;
 using SymmetryDetection.FileTypes.PLY;
 using SymmetryDetection.Interfaces;
 using SymmetryDetection.SymmetryDectection;
@@ -16,8 +17,11 @@ namespace SymmetryDetection
             ReflectionalSymmetry sym = new ReflectionalSymmetry(new Vector3(0, 0, 0), new Vector3(1, 0, 0));
 
 
-            PLYFile file = new PLYFile();
-            file.LoadFromFile($@"C:/Temp/test3.ply");
+            //PLYFile file = new PLYFile();
+            //file.LoadFromFile($@"/Users/eddie/untitled.ply");
+
+            InstallationDefinitionFile file = new InstallationDefinitionFile();
+            file.LoadFromFile("/Users/eddie/SculptureGallery/SculptureGallery/SculptureGallery/SculptureGallery/json/axial1.json");
             List<ISymmetryDetector> handlers = new List<ISymmetryDetector>()
             {
                 new ReflectionalSymmetryDetector(),
