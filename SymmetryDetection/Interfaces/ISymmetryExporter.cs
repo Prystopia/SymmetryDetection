@@ -6,6 +6,6 @@ namespace SymmetryDetection.Interfaces
 {
     public interface ISymmetryExporter
     {
-        string ExportSymmetries(IList<ISymmetry> symmetries);
+        string ExportSymmetries(IList<ISymmetry> symmetries, float? globalScore = null);
     }
 }

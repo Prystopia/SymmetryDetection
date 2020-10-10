@@ -12,6 +12,9 @@ namespace SymmetryDetection.SymmetryDectection
     {
         public Vector3 Origin { get; set; }
         public Vector3 Normal { get; set; }
+        public float SymmetryScore { get; set; }
+        public float OcclusionScore { get; set; }
+
         public ReflectionalSymmetry(Vector3 origin, Vector3 normal)
         {
             this.Origin = origin;

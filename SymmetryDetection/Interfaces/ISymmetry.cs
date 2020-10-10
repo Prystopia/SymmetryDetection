@@ -7,6 +7,8 @@ namespace SymmetryDetection.Interfaces
     {
         Vector3 Origin { get; set; }
         Vector3 Normal { get; set; }
+        float SymmetryScore { get; set; }
+        float OcclusionScore { get; set; }
 
         void SetOriginProjected(Vector3 point);
     }

@@ -1,5 +1,4 @@
-﻿using Accord.Math.Decompositions;
-using SymmetryDetection.DataTypes;
+﻿using SymmetryDetection.DataTypes;
 using SymmetryDetection.Extensions;
 using System;
 using System.Collections.Generic;
@@ -15,8 +14,8 @@ namespace SymmetryDetection.SymmetryDectection
         private bool FakeIndices { get; set; }
         private List<int> Indices { get; set; }
         public Vector3 Mean { get; set; }
-        public float[,] EigenVectors { get; set; }
-        public float[] EigenValues { get; set; }
+        //public float[,] EigenVectors { get; set; }
+        //public float[] EigenValues { get; set; }
 
         public PCA(PointCloud pc)
         {
@@ -34,7 +33,7 @@ namespace SymmetryDetection.SymmetryDectection
         {
             this.Calculate3DCentroid();
             this.DemeanCloud();
-            this.CalculateEigenVectors();
+            //this.CalculateEigenVectors();
         }
 
         public void Calculate3DCentroid()
@@ -69,16 +68,16 @@ namespace SymmetryDetection.SymmetryDectection
             }
         }
 
-        private void CalculateEigenVectors()
-        {
-            float coeff = 1f / ((float)Indices.Count - 1f);
-            //matrix is 3 rows - x, y & z + each col represents a point
-            var array = DemeanedCloud.ConvertToArray().TopRows(3).Multiply(coeff);
-            var nxtArray = array.Multiply(DemeanedCloud.ConvertToArray().TopRows(3).Transpose());
-            EigenvalueDecompositionF eigenvalue = new EigenvalueDecompositionF(nxtArray);
-            this.EigenVectors = eigenvalue.Eigenvectors;
-            this.EigenValues = eigenvalue.RealEigenvalues;
-        }
+        //private void CalculateEigenVectors()
+        //{
+        //    float coeff = 1f / ((float)Indices.Count - 1f);
+        //    //matrix is 3 rows - x, y & z + each col represents a point
+        //    var array = DemeanedCloud.ConvertToArray().TopRows(3).Multiply(coeff);
+        //    var nxtArray = array.Multiply(DemeanedCloud.ConvertToArray().TopRows(3).Transpose());
+        //    EigenvalueDecompositionF eigenvalue = new EigenvalueDecompositionF(nxtArray);
+        //    this.EigenVectors = eigenvalue.Eigenvectors;
+        //    this.EigenValues = eigenvalue.RealEigenvalues;
+        //}
 
         private float[,] GetArray()
         {

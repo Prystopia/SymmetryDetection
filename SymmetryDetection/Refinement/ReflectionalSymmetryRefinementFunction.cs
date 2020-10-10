@@ -1,6 +1,7 @@
 ﻿using SymmetryDetection.DataTypes;
 using SymmetryDetection.Extensions;
 using SymmetryDetection.Helpers;
+using SymmetryDetection.Interfaces;
 using SymmetryDetection.SymmetryDectection;
 using System;
 using System.Collections.Generic;
@@ -9,15 +10,7 @@ using System.Text;
 
 namespace SymmetryDetection.Refinement
 {
-    public interface LMFunction
-    {
-        double[] Function(double[] input);
-        //int df(float[] input, float[,] fjac);
-        int InputSize { get; }
-        int ValuesSize { get; }
-
-    }
-    public class ReflectionalSymmetryRefinementFunction : LMFunction
+    public class ReflectionalSymmetryRefinementFunction : ILMFunction
     {
         private PointCloud Cloud { get; set; }
         public List<Correspondence> Correspondences { get; set; }

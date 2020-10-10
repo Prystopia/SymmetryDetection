@@ -1,5 +1,4 @@
 ﻿using System;
-using Accord.Math;
 using SymmetryDetection.Optimisation;
 using Xunit;
 
@@ -228,25 +227,24 @@ namespace SymmetryDetection.Test
             //var errorEncountered = this.Service.Decompose(A);
             //var r = this.Service.GetR();
 
-            double[,] tau = new double[1,1];
-            //alglib.ortfac.rmatrixqr(ref A, A.GetLength(0), A.GetLength(1), ref tau, new alglib.xparams(0));
-
-            alglib.ortfac.rmatrixqrunpackr(A, A.GetLength(0), A.GetLength(1), ref tau, new alglib.xparams(0));
+            double[] tau = new double[0];
+            double[,] r = new double[0, 0];
+            alglib.ortfac.rmatrixqr(ref A, A.GetLength(0), A.GetLength(1), ref tau, new alglib.xparams(0));
+            alglib.ortfac.rmatrixqrunpackr(A, A.GetLength(0), A.GetLength(1), ref r, new alglib.xparams(0));
 
             //issue seems to be the QR array is the wrong size - 3,4 instead of 4,3 
 
-            //Assert.False(errorEncountered);
-            //Assert.Equal(7, r.GetLength(0));
-            //Assert.Equal(5, r.GetLength(1));
-            //Assert.Equal(-1.2458, Math.Round(r[0, 0], 4));
-            //Assert.Equal(-6.2820, Math.Round(r[0, 1], 4));
-            //Assert.Equal(-10.6097, Math.Round(r[0, 2], 4));
-            //Assert.Equal(0, Math.Round(r[1, 0], 4));
-            //Assert.Equal(-1.4375, Math.Round(r[1, 1], 4));
-            //Assert.Equal(-17.4780, Math.Round(r[1, 2], 2));
-            //Assert.Equal(0, Math.Round(r[2, 0], 2));
-            //Assert.Equal(0, Math.Round(r[2, 1], 2));
-            //Assert.Equal(-1.4380, Math.Round(r[2, 2], 4));
+            Assert.Equal(7, r.GetLength(0));
+            Assert.Equal(5, r.GetLength(1));
+            Assert.Equal(-1.2458, Math.Round(r[0, 0], 4));
+            Assert.Equal(-6.2820, Math.Round(r[0, 1], 4));
+            Assert.Equal(-10.6097, Math.Round(r[0, 2], 4));
+            Assert.Equal(0, Math.Round(r[1, 0], 4));
+            Assert.Equal(-1.4375, Math.Round(r[1, 1], 4));
+            Assert.Equal(-17.4780, Math.Round(r[1, 2], 2));
+            Assert.Equal(0, Math.Round(r[2, 0], 2));
+            Assert.Equal(0, Math.Round(r[2, 1], 2));
+            Assert.Equal(-1.4380, Math.Round(r[2, 2], 4));
 
         }
     }

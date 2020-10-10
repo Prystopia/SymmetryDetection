@@ -35,7 +35,7 @@ namespace SymmetryDetection.Helpers
             distance = MathsHelpers.PointToPointDistance(refProjectPoint1, refProjectPoint2);
         }
 
-        private static float LineLineAngleCos(Vector3 direction1, Vector3 direction2)
+        public static float LineLineAngleCos(Vector3 direction1, Vector3 direction2)
         {
             return MathF.Abs(VectorVectorAngleCos(direction1, direction2));
         }
@@ -48,6 +48,14 @@ namespace SymmetryDetection.Helpers
         public static Vector3 ProjectPoint(Vector3 point, ISymmetry plane)
         {
             return ProjectPointToPlane(point, plane.Origin, plane.Normal);
+        }
+
+        public static float GetAbsoluteDistance(Vector3 to, Vector3 from)
+        {
+            var xDist = MathF.Pow(to.X - from.X, 2);
+            var yDist = MathF.Pow(to.Y - from.Y, 2);
+            var zDist = MathF.Pow(to.Z - from.Z, 2);
+            return MathF.Sqrt(xDist + yDist + zDist);
         }
     }
 }

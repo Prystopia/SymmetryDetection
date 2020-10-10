@@ -7,7 +7,7 @@ namespace SymmetryDetection.Exporters
 {
     public class JsonExporter : ISymmetryExporter
     {
-        public string ExportSymmetries(IList<ISymmetry> symmetries)
+        public string ExportSymmetries(IList<ISymmetry> symmetries, float? globalScore = null)
         {
             throw new NotImplementedException();
         }

@@ -17,12 +17,12 @@ namespace SymmetryDetection.Optimisation
         //hdiag is the diagonal of the identity matrix
 
         public int MaxIterations { get; set; }
-        public double FunctionTolerance => 1e-12f;
-        public double GradiantTolerance => 1e-12f;
+        public double FunctionTolerance { get; set; }
+        public double GradiantTolerance { get; set; }
         public double Delta => 1e-8f;
 
         public double InitialLambda { get; set; }
-        public LMFunction Functor { get; set; }
+        public ILMFunction Functor { get; set; }
         public double InitialCost { get; set; }
         public double FinalCost { get; set; }
 
@@ -37,12 +37,14 @@ namespace SymmetryDetection.Optimisation
 
         private ILinearSolver Solver { get; set; }
 
-        public LevenbergMarquadtEJML(LMFunction functor, ILinearSolver solver, double initialLambda = 1)
+        public LevenbergMarquadtEJML(ILMFunction functor, ILinearSolver solver, double initialLambda = 1, double functionTolerance = 1e-12, double gradientTolerance = 1e-12)
         {
             this.MaxIterations = 400;
             this.Functor = functor;
             this.InitialLambda = initialLambda;
             this.Solver = solver;
+            this.FunctionTolerance = functionTolerance;
+            this.GradiantTolerance = gradientTolerance;
             this.Configure();
         }
 

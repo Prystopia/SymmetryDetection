@@ -1,4 +1,6 @@
-﻿using SymmetryDetection.SymmetryDectection;
+﻿using Moq;
+using SymmetryDetection.Interfaces;
+using SymmetryDetection.SymmetryDectection;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,6 +11,7 @@ namespace SymmetryDetection.Test
     public class ReflectionalSymmetryDetectorTests 
     {
         public ReflectionalSymmetryDetector Service { get; set; }
+        private Mock<ISymmetryScoreService> ScoreServiceMock { get; set; }
 
         public ReflectionalSymmetryDetectorTests()
         {
@@ -17,7 +20,8 @@ namespace SymmetryDetection.Test
 
         private void Setup()
         {
-            this.Service = new ReflectionalSymmetryDetector();
+            this.ScoreServiceMock = new Mock<ISymmetryScoreService>();
+            this.Service = new ReflectionalSymmetryDetector(this.ScoreServiceMock.Object);
         }
 
         [Fact]

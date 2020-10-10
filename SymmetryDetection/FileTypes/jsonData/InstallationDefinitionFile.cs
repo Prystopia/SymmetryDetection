@@ -24,6 +24,8 @@ namespace SymmetryDetection.FileTypes
         public int VertexCount { get; set; }
         public int TotalFaces { get; set; }
         public int TotalEdges { get; set; }
+        public string OffFileDef { get; set; }
+        public string plyFile { get; set; }
 
         public PointCloud ConvertToPointCloud()
         {
