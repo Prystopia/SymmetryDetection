@@ -10,20 +10,20 @@ namespace SymmetryDetection.Test
     {
         public ReflectionalSymmetryDetector Service { get; set; }
 
-        public ReflectionalSymmetryDetectorTests()
-        {
-            this.Setup();
-        }
+        //public ReflectionalSymmetryDetectorTests()
+        //{
+        //    this.Setup();
+        //}
 
-        private void Setup()
-        {
-            this.Service = new ReflectionalSymmetryDetector();
-        }
+        //private void Setup()
+        //{
+        //    this.Service = new ReflectionalSymmetryDetector();
+        //}
 
-        [Fact]
-        public void GenerateSpherePoints()
-        {
-            Service.GenerateSpherePoints(5);
-        }
+        //[Fact]
+        //public void GenerateSpherePoints()
+        //{
+        //    Service.GenerateSpherePoints(5);
+        //}
     }
 }

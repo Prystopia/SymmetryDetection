@@ -99,7 +99,7 @@ namespace SymmetryDetection.SymmetryDectection
                         indices.Add(i);
                     }
                     //merge symmetries for the entire cloud
-                    List<int> symmetryMergedGlobalIdsLinear = detector.MergeDuplicateSymmetries(symmetryLinear, indices, referencePointsLinear, occlusionScoresLinear);
+                    List<int> symmetryMergedGlobalIdsLinear = detector.MergeDuplicateSymmetries(symmetryLinear, indices, referencePointsLinear, detector.OcclusionScores);
 
                     //construct Final output
                     foreach (var merged in symmetryMergedGlobalIdsLinear)
@@ -114,6 +114,17 @@ namespace SymmetryDetection.SymmetryDectection
                 }
             }
             DeMeanSymmetries();
+        }
+
+        public float CalculateGlobalSymmetryScore()
+        {
+            float scoreSum = 0;
+            foreach (var detector in SymmetryDetectors)
+            {
+                var typeScore = detector.CalculateGlobalScore();
+                scoreSum += typeScore * ((float)detector.SymmetryMergedIds.Count / 57);
+            }
+            return scoreSum / SymmetryDetectors.Count();
         }
 
         private void DeMeanSymmetries()

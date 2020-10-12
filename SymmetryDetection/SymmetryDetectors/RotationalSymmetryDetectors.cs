@@ -28,6 +28,11 @@ namespace SymmetryDetection.SymmetryDetectors
         private PointCloud Cloud { get; set; }
         private PCA PCA { get; set; }
 
+        public float CalculateGlobalScore()
+        {
+            throw new NotImplementedException();
+        }
+
         public void CalculateSymmetryPointSymmetryScores(PointCloud cloud, ISymmetry symmetry, out List<float> pointSymmetryScores, out List<Correspondence> correspondences)
         {
             throw new NotImplementedException();

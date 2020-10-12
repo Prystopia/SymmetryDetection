@@ -23,6 +23,6 @@ namespace SymmetryDetection.Interfaces
         List<ISymmetry> GetInitialSymmetries(PointCloud cloud);
         ISymmetry RefineSymmetryPosition(PointCloud cloud, ISymmetry originalSymmetry);
         bool RefineGlobalSymmetryPosition(PointCloud cloud, ISymmetry symmetry);
-        void CalculateSymmetryPointSymmetryScores(PointCloud cloud, ISymmetry symmetry, out List<float> pointSymmetryScores, out List<Correspondence> correspondences);
+        float CalculateGlobalScore();
     }
 }
