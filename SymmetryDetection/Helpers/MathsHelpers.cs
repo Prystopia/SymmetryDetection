@@ -40,5 +40,14 @@ namespace SymmetryDetection.Helpers
 
             return val;
         }
+
+        public static float VectorVectorAngleCW(Vector3 reference, Vector3 current, Vector3 normal)
+        {
+            return 0;
+        }
+        public static float AngleDifferenceCCW(float angle, float previousAngle)
+        {
+            return 0;
+        }
     }
 }

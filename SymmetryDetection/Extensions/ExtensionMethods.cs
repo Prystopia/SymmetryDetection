@@ -15,50 +15,50 @@ namespace SymmetryDetection.Extensions
     public static class ExtensionMethods
     {
         public const float EPSILON = 2.2204460492503131e-16f;
-        public static Vector3 MultiplyVector(this Vector3 vector, Quaternion rotation)
-        {
-            float x = rotation.X * 2f;
-            float y = rotation.Y * 2f;
-            float z = rotation.Z * 2f;
+        //public static Vector3 MultiplyVector(this Vector3 vector, Quaternion rotation)
+        //{
+        //    float x = rotation.X * 2f;
+        //    float y = rotation.Y * 2f;
+        //    float z = rotation.Z * 2f;
 
-            float xx = rotation.X = x;
-            float yy = rotation.Y * y;
-            float zz = rotation.Z * z;
+        //    float xx = rotation.X = x;
+        //    float yy = rotation.Y * y;
+        //    float zz = rotation.Z * z;
 
-            float xy = rotation.X * y;
-            float xz = rotation.X * z;
-            float yz = rotation.Y * z;
+        //    float xy = rotation.X * y;
+        //    float xz = rotation.X * z;
+        //    float yz = rotation.Y * z;
 
-            float wx = rotation.W * x;
-            float wy = rotation.W * y;
-            float wz = rotation.W * z;
+        //    float wx = rotation.W * x;
+        //    float wy = rotation.W * y;
+        //    float wz = rotation.W * z;
 
-            Vector3 newVector = new Vector3();
-            newVector.X = (1f - (yy + zz)) * vector.X + (xy - wz) * vector.Y + (xz + wy) * vector.Z;
-            newVector.Y = (xy + wz) * vector.X + (1F - (xx + zz)) * vector.Y + (yz - wx) * vector.Z;
-            newVector.Z = (xz - wy) * vector.X + (yz + wx) * vector.Y + (1F - (xx + yy)) * vector.Z;
-            return newVector;
-        }
+        //    Vector3 newVector = new Vector3();
+        //    newVector.X = (1f - (yy + zz)) * vector.X + (xy - wz) * vector.Y + (xz + wy) * vector.Z;
+        //    newVector.Y = (xy + wz) * vector.X + (1F - (xx + zz)) * vector.Y + (yz - wx) * vector.Z;
+        //    newVector.Z = (xz - wy) * vector.X + (yz + wx) * vector.Y + (1F - (xx + yy)) * vector.Z;
+        //    return newVector;
+        //}
 
-        public static Vector3 GetCol(this float[,] matrix, int column)
-        {
-            return new Vector3(matrix[0, column], matrix[1, column], matrix[2, column]);
-        }
+        //public static Vector3 GetCol(this float[,] matrix, int column)
+        //{
+        //    return new Vector3(matrix[0, column], matrix[1, column], matrix[2, column]);
+        //}
 
-        public static float[,] TopRows(this float[,] original, int numRows)
-        {
-            float[,] item = new float[numRows, original.GetLength(1)];
+        //public static float[,] TopRows(this float[,] original, int numRows)
+        //{
+        //    float[,] item = new float[numRows, original.GetLength(1)];
 
-            for(int i = 0; i < numRows; i++)
-            {
-                for (int j = 0; j < original.GetLength(1); j++)
-                {
-                    item[i, j] = original[i, j];
-                }
-            }
+        //    for(int i = 0; i < numRows; i++)
+        //    {
+        //        for (int j = 0; j < original.GetLength(1); j++)
+        //        {
+        //            item[i, j] = original[i, j];
+        //        }
+        //    }
 
-            return item;
-        }
+        //    return item;
+        //}
 
         public static float[] GetColumn(this float[,] matrix, int column)
         {
@@ -82,44 +82,44 @@ namespace SymmetryDetection.Extensions
             return val;
         }
 
-        public static double[,] EnsureZerosLowerTriangle(this double[,] A, int numRows, int numCols)
-        {
-            double[,] returnArray = new double[numRows, numCols];
-            returnArray.Fill(0);
-            //if A is null or incorrect size then return a full array of 0s
-            if (A != null && numRows == A.GetLength(0) && numCols == A.GetLength(1))
-            {
-                //fill only lower triangle with 0s
-                for (int i = 0; i < A.GetLength(0); i++)
-                {
-                    for (int j = 0; j < A.GetLength(1); j++)
-                    {
-                        if (i < j)
-                        {
-                            A[i, j] = 0;
-                        }
-                    }
-                }
-            }
+        //public static double[,] EnsureZerosLowerTriangle(this double[,] A, int numRows, int numCols)
+        //{
+        //    double[,] returnArray = new double[numRows, numCols];
+        //    returnArray.Fill(0);
+        //    //if A is null or incorrect size then return a full array of 0s
+        //    if (A != null && numRows == A.GetLength(0) && numCols == A.GetLength(1))
+        //    {
+        //        //fill only lower triangle with 0s
+        //        for (int i = 0; i < A.GetLength(0); i++)
+        //        {
+        //            for (int j = 0; j < A.GetLength(1); j++)
+        //            {
+        //                if (i < j)
+        //                {
+        //                    A[i, j] = 0;
+        //                }
+        //            }
+        //        }
+        //    }
 
-            return returnArray;
-        }
+        //    return returnArray;
+        //}
 
-        public static double FindMax(this double[] u, int startIndex, int length)
-        {
-            double max = -1;
+        //public static double FindMax(this double[] u, int startIndex, int length)
+        //{
+        //    double max = -1;
 
-            int stopIndex = startIndex + length;
-            for (int index = startIndex; index < stopIndex; index++)
-            {
-                double val = u[index];
-                val = (val < 0.0) ? -val : val;
-                if (val > max)
-                    max = val;
-            }
+        //    int stopIndex = startIndex + length;
+        //    for (int index = startIndex; index < stopIndex; index++)
+        //    {
+        //        double val = u[index];
+        //        val = (val < 0.0) ? -val : val;
+        //        if (val > max)
+        //            max = val;
+        //    }
 
-            return max;
-        }
+        //    return max;
+        //}
 
         public static void Fill(this double[,] matrix, double value)
         {
@@ -131,59 +131,59 @@ namespace SymmetryDetection.Extensions
                 }
             }
         }
-        public static void SetColumn(this float[,] matrix, int column, float[] newValue)
-        {
-            for (int i = 0; i < matrix.GetLongLength(column); i++)
-            {
-                matrix[i, column] = newValue[i];
-            }
-        }
+        //public static void SetColumn(this float[,] matrix, int column, float[] newValue)
+        //{
+        //    for (int i = 0; i < matrix.GetLongLength(column); i++)
+        //    {
+        //        matrix[i, column] = newValue[i];
+        //    }
+        //}
 
-        public static float[] GetHead(this float[] matrix, int numToReturn)
-        {
-            float[] returnVal = new float[numToReturn];
-            for (int i = 0; i < numToReturn; i++)
-            {
-                returnVal[i] = matrix[i];
-            }
-            return returnVal;
-        }
-        public static float[] SetHead(this float[] matrix, int numToSet, float value)
-        {
-            float[] returnVal = matrix;
-            for (int i = 0; i < numToSet; i++)
-            {
-                returnVal[i] = value;
-            }
-            return returnVal;
-        }
+        //public static float[] GetHead(this float[] matrix, int numToReturn)
+        //{
+        //    float[] returnVal = new float[numToReturn];
+        //    for (int i = 0; i < numToReturn; i++)
+        //    {
+        //        returnVal[i] = matrix[i];
+        //    }
+        //    return returnVal;
+        //}
+        //public static float[] SetHead(this float[] matrix, int numToSet, float value)
+        //{
+        //    float[] returnVal = matrix;
+        //    for (int i = 0; i < numToSet; i++)
+        //    {
+        //        returnVal[i] = value;
+        //    }
+        //    return returnVal;
+        //}
 
-        public static float[,] ConvertToArray(this PointCloud pointCloud)
-        {
-            float[,] pc = new float[3, pointCloud.Points.Count];
+        //public static float[,] ConvertToArray(this PointCloud pointCloud)
+        //{
+        //    float[,] pc = new float[3, pointCloud.Points.Count];
 
-            for (int i = 0; i < pointCloud.Points.Count; i++)
-            {
-                var point = pointCloud.Points[i];
-                pc[0, i] = point.Position.X;
-                pc[1, i] = point.Position.Y;
-                pc[2, i] = point.Position.Z;
-            }
+        //    for (int i = 0; i < pointCloud.Points.Count; i++)
+        //    {
+        //        var point = pointCloud.Points[i];
+        //        pc[0, i] = point.Position.X;
+        //        pc[1, i] = point.Position.Y;
+        //        pc[2, i] = point.Position.Z;
+        //    }
 
-            return pc;
-        }
+        //    return pc;
+        //}
 
-        public static float Dot(this Vector3 original, Vector3 next)
-        {
-            float val = 0;
+        //public static float Dot(this Vector3 original, Vector3 next)
+        //{
+        //    float val = 0;
 
-            var x = original.X * next.X;
-            var y = original.Y * next.Y;
-            var z = original.Z * next.Z;
-            val = x + y + z;
+        //    var x = original.X * next.X;
+        //    var y = original.Y * next.Y;
+        //    var z = original.Z * next.Z;
+        //    val = x + y + z;
 
-            return val;
-        }
+        //    return val;
+        //}
 
         public static float ClampValue(this float val, float min, float max)
         {
@@ -198,24 +198,24 @@ namespace SymmetryDetection.Extensions
             return (MathF.PI / 180) * angle;
         }
 
-        public static string GetExportFile(this List<ISymmetry> symmetries)
-        {
-            StringBuilder sb = new StringBuilder();
+        //public static string GetExportFile(this List<ISymmetry> symmetries)
+        //{
+        //    StringBuilder sb = new StringBuilder();
 
-            sb.Append("SYMMETRY_ID,ORIGIN,NORMAL");
-            sb.Append(Environment.NewLine);
+        //    sb.Append("SYMMETRY_ID,ORIGIN,NORMAL");
+        //    sb.Append(Environment.NewLine);
 
-            for (int i = 0; i < symmetries.Count; i++)
-            {
-                var sym = symmetries[i];
-                sb.Append($"{i},");
-                sb.Append($"X: {sym.Origin.X} Y: {sym.Origin.Y} Z: {sym.Origin.Z},");
-                sb.Append($"X: {sym.Normal.X} Y: {sym.Normal.Y} Z: {sym.Normal.Z},");
-                sb.Append(Environment.NewLine);
-            }
+        //    for (int i = 0; i < symmetries.Count; i++)
+        //    {
+        //        var sym = symmetries[i];
+        //        sb.Append($"{i},");
+        //        sb.Append($"X: {sym.Origin.X} Y: {sym.Origin.Y} Z: {sym.Origin.Z},");
+        //        sb.Append($"X: {sym.Normal.X} Y: {sym.Normal.Y} Z: {sym.Normal.Z},");
+        //        sb.Append(Environment.NewLine);
+        //    }
 
-            return sb.ToString();
-        }
+        //    return sb.ToString();
+        //}
 
         public static double[] GetRow(this double[,] original, int row)
         {
@@ -229,72 +229,72 @@ namespace SymmetryDetection.Extensions
             return newArray;
         }
 
-        public static float[] GetRow(this float[,] original, int row)
+        //public static float[] GetRow(this float[,] original, int row)
+        //{
+        //    float[] newArray = new float[original.GetLength(1)];
+
+        //    for (int i = 0; i < original.GetLength(1); i++)
+        //    {
+        //        newArray[i] = original[row, i];
+        //    }
+
+        //    return newArray;
+        //}
+
+        //public static float StableNorm(this float[] array)
+        //{
+        //    int index = array.Length;
+        //    float norm = -1;
+
+        //    if (index == 1)
+        //    {
+        //        norm = MathF.Abs(array[0]);
+        //    }
+        //    else
+        //    {
+        //        float scale = 0;
+        //        float inverseScale = 1;
+        //        float ssq = 0;
+
+        //        float maxCoefficient = array.AbsoluteValue().MaxCoefficient(out _);
+        //        if (maxCoefficient > scale)
+        //        {
+        //            ssq = ssq * MathF.Abs(scale / maxCoefficient);
+        //            float temp = 1f / maxCoefficient;
+        //            if (temp > float.MaxValue)
+        //            {
+        //                inverseScale = float.MaxValue;
+        //                scale = 1 / inverseScale;
+        //            }
+        //            else if (float.IsInfinity(maxCoefficient))
+        //            {
+        //                inverseScale = 1;
+        //                scale = maxCoefficient;
+        //            }
+        //            else
+        //            {
+        //                scale = maxCoefficient;
+        //                inverseScale = temp;
+        //            }
+        //        }
+        //        else
+        //        {
+        //            scale = maxCoefficient;
+        //        }
+
+        //        if (scale > 0f)
+        //        {
+        //            ssq += array.Multiply(inverseScale).SquaredNorm();
+        //        }
+
+        //        norm = scale = MathF.Sqrt(ssq);
+        //    }
+        //    return norm;
+        //}
+
+        public static float Magnitude(this Vector3 original)
         {
-            float[] newArray = new float[original.GetLength(1)];
-
-            for (int i = 0; i < original.GetLength(1); i++)
-            {
-                newArray[i] = original[row, i];
-            }
-
-            return newArray;
-        }
-
-        public static float StableNorm(this float[] array)
-        {
-            int index = array.Length;
-            float norm = -1;
-
-            if (index == 1)
-            {
-                norm = MathF.Abs(array[0]);
-            }
-            else
-            {
-                float scale = 0;
-                float inverseScale = 1;
-                float ssq = 0;
-
-                float maxCoefficient = array.AbsoluteValue().MaxCoefficient(out _);
-                if (maxCoefficient > scale)
-                {
-                    ssq = ssq * MathF.Abs(scale / maxCoefficient);
-                    float temp = 1f / maxCoefficient;
-                    if (temp > float.MaxValue)
-                    {
-                        inverseScale = float.MaxValue;
-                        scale = 1 / inverseScale;
-                    }
-                    else if (float.IsInfinity(maxCoefficient))
-                    {
-                        inverseScale = 1;
-                        scale = maxCoefficient;
-                    }
-                    else
-                    {
-                        scale = maxCoefficient;
-                        inverseScale = temp;
-                    }
-                }
-                else
-                {
-                    scale = maxCoefficient;
-                }
-
-                if (scale > 0f)
-                {
-                    ssq += array.Multiply(inverseScale).SquaredNorm();
-                }
-
-                norm = scale = MathF.Sqrt(ssq);
-            }
-            return norm;
-        }
-
-        public static float SquaredNorm(this float[] original)
-        {
-            return original.Sum().Abs2();
+            return MathF.Sqrt(MathF.Pow(original.X, 2) + MathF.Pow(original.Y, 2) + MathF.Pow(original.Z, 2));
         }
 
         public static double SquaredNorm(this double[] original)

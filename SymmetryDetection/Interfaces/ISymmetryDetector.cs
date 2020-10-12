@@ -6,22 +6,19 @@ using SymmetryDetection.SymmetryDectection;
 
 namespace SymmetryDetection.Interfaces
 {
-    public interface ISymmetryDetector
+    public interface ISymmetryDetector<T> where T : ISymmetry
     {
         int MaxPlanes { get; }
-        List<ISymmetry> RefinedSymmetries { get; set; }
-        List<float> OcclusionScores { get; set; }
-        List<float> CloudInlierScores { get; set; }
-        List<float> CorrespondenceInlierScores { get; set; }
-        List<ISymmetry> FilteredSymmetries { get; set; }
-        List<ISymmetry> MergedSymmetries { get; set; }
+        List<T> RefinedSymmetries { get; set; }
+        List<T> FilteredSymmetries { get; set; }
+        List<T> MergedSymmetries { get; set; }
         void SetCloud(PointCloud cloud);
         void SetPCA(PCA pca);
         void Detect();
         void Filter();
         void Merge();
-        List<ISymmetry> MergeDuplicateSymmetries(List<ISymmetry> symmetries, List<Vector3> symmetryReferencePoints);
-        List<ISymmetry> GetInitialSymmetries(PointCloud cloud);
+        List<T> MergeDuplicateSymmetries(List<T> symmetries, List<Vector3> symmetryReferencePoints);
+        List<T> GetInitialSymmetries(PointCloud cloud);
         float CalculateGlobalSymmetryScore();
     }
 }

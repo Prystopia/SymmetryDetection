@@ -11,18 +11,15 @@ using System.Text;
 
 namespace SymmetryDetection.SymmetryDetectors
 {
-    public class RotationalSymmetryDetector : ISymmetryDetector
+    public class RotationalSymmetryDetector : ISymmetryDetector<RotationalSymmetry>
     {
-        public List<ISymmetry> RefinedSymmetries { get; set; }
-        public List<float> OcclusionScores { get; set; }
-        public List<float> CloudInlierScores { get; set; }
-        public List<float> CorrespondenceInlierScores { get; set; }
-        public List<ISymmetry> FilteredSymmetries { get; set; }
-        public List<ISymmetry> MergedSymmetries { get; set; }
+        public List<RotationalSymmetry> RefinedSymmetries { get; set; }
+        public List<RotationalSymmetry> FilteredSymmetries { get; set; }
+        public List<RotationalSymmetry> MergedSymmetries { get; set; }
 
         public int MaxPlanes => 3;
 
-        private List<ISymmetry> InitialSymmetries { get; set; }
+        private List<RotationalSymmetry> InitialSymmetries { get; set; }
         private PointCloud Cloud { get; set; }
         private PCA PCA { get; set; }
 
@@ -75,25 +72,24 @@ namespace SymmetryDetection.SymmetryDetectors
 
         public void Filter()
         {
-            FilteredSymmetries = new List<ISymmetry>();
+            FilteredSymmetries = new List<RotationalSymmetry>();
 
-            foreach(ISymmetry symmetry in RefinedSymmetries)
+            foreach(RotationalSymmetry symmetry in RefinedSymmetries)
             {
-                RotationalSymmetry castSymmetry = (RotationalSymmetry)symmetry;
 
-                if (castSymmetry.SymmetryScore < RotationalSymmetryParameters.MAX_SYMMETRY_SCORE &&
-                    castSymmetry.OcclusionScore < RotationalSymmetryParameters.MAX_OCCLUSION_SCORE &&
-                    castSymmetry.PerpendicularScore < RotationalSymmetryParameters.MAX_PERPENDICULAR_SCORE &&
-                    castSymmetry.CoverageScore > RotationalSymmetryParameters.MIN_COVERAGE_SCORE)
+                if (symmetry.SymmetryScore < RotationalSymmetryParameters.MAX_SYMMETRY_SCORE &&
+                    symmetry.OcclusionScore < RotationalSymmetryParameters.MAX_OCCLUSION_SCORE &&
+                    symmetry.PerpendicularScore < RotationalSymmetryParameters.MAX_PERPENDICULAR_SCORE &&
+                    symmetry.CoverageScore > RotationalSymmetryParameters.MIN_COVERAGE_SCORE)
                 {
                     FilteredSymmetries.Add(symmetry);
                 }
             }
         }
 
-        public List<ISymmetry> GetInitialSymmetries(PointCloud cloud)
+        public List<RotationalSymmetry> GetInitialSymmetries(PointCloud cloud)
         {
-            List<ISymmetry> syms = new List<ISymmetry>();
+            List<RotationalSymmetry> syms = new List<RotationalSymmetry>();
             var mean = PCA.Mean;
             syms.Add(new RotationalSymmetry(mean, Vector3.UnitX));
             syms.Add(new RotationalSymmetry(mean, Vector3.UnitY));
@@ -110,7 +106,7 @@ namespace SymmetryDetection.SymmetryDetectors
             }
         }
 
-        public List<ISymmetry> MergeDuplicateSymmetries(List<ISymmetry> symmetries, List<Vector3> symmetryReferencePoints)
+        public List<RotationalSymmetry> MergeDuplicateSymmetries(List<RotationalSymmetry> symmetries, List<Vector3> symmetryReferencePoints)
         {
             throw new NotImplementedException();
         }

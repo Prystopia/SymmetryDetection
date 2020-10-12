@@ -19,14 +19,16 @@ namespace SymmetryDetection.SymmetryDectection
     {
         private PointCloud Cloud { get; set; }
         private PCA ComponentsAnalysis { get; set; }
-        private IEnumerable<ISymmetryDetector> SymmetryDetectors { get; set; }
+        private ISymmetryDetector<ReflectionalSymmetry> ReflectionalSymmetryDetector { get; set; }
+        private ISymmetryDetector<RotationalSymmetry> RotationalSymmetryDetector { get; set; }
         public List<ISymmetry> Symmetries { get; set; }
 
-        public SymmetryDetectionHandler(IFileType file, IEnumerable<ISymmetryDetector> symmetryDetectors/*, IPrincipalComponentsAnalyser pca*/)
+        public SymmetryDetectionHandler(IFileType file, ISymmetryDetector<ReflectionalSymmetry> reflectionalDetector, ISymmetryDetector<RotationalSymmetry> rotationalDetector)
         {
             Cloud = file.ConvertToPointCloud();
             ComponentsAnalysis = new PCA(Cloud);
-            SymmetryDetectors = symmetryDetectors;
+            ReflectionalSymmetryDetector = reflectionalDetector;
+            RotationalSymmetryDetector = rotationalDetector;
             Symmetries = new List<ISymmetry>();
         }
 
@@ -35,16 +37,25 @@ namespace SymmetryDetection.SymmetryDectection
             var cloud = ComponentsAnalysis.DemeanedCloud;
             if (cloud.Points.Count > 3)
             {
-                foreach (var detector in SymmetryDetectors)
+                if (ReflectionalSymmetryDetector != null)
                 {
-                    detector.SetCloud(cloud);
-                    detector.SetPCA(new PCA(cloud));
+                    ReflectionalSymmetryDetector.SetCloud(cloud);
+                    ReflectionalSymmetryDetector.SetPCA(new PCA(cloud));
 
-                    detector.Detect();
-                    detector.Filter(); // filter based on score
-                    detector.Merge();
+                    ReflectionalSymmetryDetector.Detect();
+                    ReflectionalSymmetryDetector.Filter(); // filter based on score
+                    ReflectionalSymmetryDetector.Merge();
+                    Symmetries.AddRange(ReflectionalSymmetryDetector.MergedSymmetries);
+                }
+                if (RotationalSymmetryDetector != null)
+                {
+                    RotationalSymmetryDetector.SetCloud(cloud);
+                    RotationalSymmetryDetector.SetPCA(new PCA(cloud));
 
-                    Symmetries.AddRange(detector.MergedSymmetries);
+                    RotationalSymmetryDetector.Detect();
+                    RotationalSymmetryDetector.Filter(); // filter based on score
+                    RotationalSymmetryDetector.Merge();
+                    Symmetries.AddRange(RotationalSymmetryDetector.MergedSymmetries);
                 }
             }
             DeMeanSymmetries();
@@ -52,12 +63,22 @@ namespace SymmetryDetection.SymmetryDectection
         public float CalculateGlobalSymmetryScore()
         {
             float scoreSum = 0;
-            foreach(var detector in SymmetryDetectors)
+            float detectorCount = 0;
+            if(ReflectionalSymmetryDetector != null)
             {
-                var typeScore = detector.CalculateGlobalSymmetryScore();
-                scoreSum += typeScore * ((float)detector.MergedSymmetries.Count / detector.MaxPlanes);
+                detectorCount++;
+                var typeScore = ReflectionalSymmetryDetector.CalculateGlobalSymmetryScore();
+                scoreSum += typeScore * ((float)ReflectionalSymmetryDetector.MergedSymmetries.Count / ReflectionalSymmetryDetector.MaxPlanes);
             }
-            return scoreSum / SymmetryDetectors.Count();
+
+            if (RotationalSymmetryDetector != null)
+            {
+                detectorCount++;
+                var typeScore = RotationalSymmetryDetector.CalculateGlobalSymmetryScore();
+                scoreSum += typeScore * ((float)RotationalSymmetryDetector.MergedSymmetries.Count / RotationalSymmetryDetector.MaxPlanes);
+            }
+
+            return scoreSum / detectorCount;
         }
 
         private void DeMeanSymmetries()

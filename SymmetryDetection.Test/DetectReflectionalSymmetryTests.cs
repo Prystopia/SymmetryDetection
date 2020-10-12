@@ -13,7 +13,7 @@ namespace SymmetryDetection.Test
         public SymmetryDetectionHandler Service { get; set; }
         private Mock<IFileType> FileTypeMock { get; set; }
 
-        private Mock<ISymmetryDetector> DetectorMock { get; set; }
+        private Mock<ISymmetryDetector<ISymmetry>> DetectorMock { get; set; }
         private Mock<ISymmetryExporter> ExporterMock { get; set; }
         public DetectReflectionalSymmetryTests()
         {
@@ -24,7 +24,7 @@ namespace SymmetryDetection.Test
         {
             this.FileTypeMock = new Mock<IFileType>();
             this.ExporterMock = new Mock<ISymmetryExporter>();
-            this.Service = new SymmetryDetectionHandler(this.FileTypeMock.Object, new List<ISymmetryDetector> { DetectorMock.Object });
+            this.Service = new SymmetryDetectionHandler(this.FileTypeMock.Object, new List<ISymmetryDetector<ISymmetry>> { DetectorMock.Object });
         }
         //[Fact]
         //DetectReflectionalSymmetries

@@ -14,6 +14,8 @@ namespace SymmetryDetection.SymmetryDectection
         public Vector3 Normal { get; set; }
         public float SymmetryScore { get; set; }
         public float OcclusionScore { get; set; }
+        public float InlierScore { get; set; }
+        public float CorrespondenceInlierScore { get; set; }
 
         public ReflectionalSymmetry(Vector3 origin, Vector3 normal)
         {

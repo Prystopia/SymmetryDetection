@@ -2,6 +2,7 @@
 using SymmetryDetection.Interfaces;
 using System;
 using System.Collections.Generic;
+using SymmetryDetection.Extensions;
 using System.Numerics;
 using System.Text;
 
@@ -32,7 +33,7 @@ namespace SymmetryDetection.SymmetryDectection
             Vector3 projectedPoint = PointHelpers.ProjectPoint(position, this);
             Vector3 planeNormal = Vector3.Cross((position - projectedPoint), Normal);
 
-            float angleSin = MathF.Abs(Vector3.Dot(planeNormal, normal) / planeNormal.Norm()).ClampValue(0, 1);
+            float angleSin = MathF.Abs(Vector3.Dot(planeNormal, normal) / planeNormal.Magnitude()).ClampValue(0, 1);
             return MathF.Asin(angleSin);
         }
 

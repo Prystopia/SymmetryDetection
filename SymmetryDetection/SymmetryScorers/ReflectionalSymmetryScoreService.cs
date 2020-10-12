@@ -18,8 +18,8 @@ namespace SymmetryDetection.SymmetryScorers
             List<float> pointSymmetryScores = new List<float>();
             correspondences = new List<Correspondence>();
 
-            //float minInlierNormalAngle = (10f).ConvertToRadians();
-            //float maxInlierNormalAngle = (15f).ConvertToRadians();
+            float minInlierNormalAngle = (10f).ConvertToRadians();
+            float maxInlierNormalAngle = (15f).ConvertToRadians();
 
             for (int i = 0; i < cloud.Points.Count; i++)
             {
@@ -46,7 +46,7 @@ namespace SymmetryDetection.SymmetryScorers
 
                     float symmetryScore = ReflectionHelpers.GetReflectionSymmetryPositionFitError(srcPoint, targetPoint, symmetry);
 
-                    //symmetryScore = (symmetryScore - minInlierNormalAngle) / (maxInlierNormalAngle - minInlierNormalAngle);
+                    symmetryScore = (symmetryScore - minInlierNormalAngle) / (maxInlierNormalAngle - minInlierNormalAngle);
                     symmetryScore = symmetryScore.ClampValue(0f, 1f);
 
                     // If all checks passed - add correspondence
