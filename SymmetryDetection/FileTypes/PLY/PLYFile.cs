@@ -15,15 +15,12 @@ namespace SymmetryDetection.FileTypes.PLY
         private const string BINARY_TYPE = "format binary_little_endian 1.0";
         private const string ASCII_TYPE = "format ascii 1.0";
         private const string HEADER_END_TEXT = "end_header";
-        private const string MAGIC_STRING = "ply";
+        private const string FILE_HEADER = "ply";
         private const string PROPERTY_IDENTIFIER = "property";
         private const string ELEMENT_IDENTIFIER = "element";
         private const string VERTEX_KEYWORD = "vertex";
 
-        public Vector4 Origin { get; set; }
-        public Quaternion Orientation { get; set; }
         public int VertexCount { get; set; }
-        public List<List<int>> RangeGrid { get; set; }
         public List<Vertex> Vertices { get; set; }
         public List<PLYProperty> Properties { get; set; }
 
@@ -33,8 +30,6 @@ namespace SymmetryDetection.FileTypes.PLY
 
         public PLYFile()
         {
-            Origin = Vector4.Zero;
-            Orientation = Quaternion.Identity;
             Properties = new List<PLYProperty>();
             Vertices = new List<Vertex>();
         }
@@ -77,12 +72,27 @@ namespace SymmetryDetection.FileTypes.PLY
             return cloud;
         }
 
+        public static string WriteFile(List<Vector3> points)
+        {
+           var props = new List<PLYProperty>()
+            {
+                new PLYProperty(){ DataType = PLYProperty.PropertyType.Float, Name = "x" },
+                new PLYProperty(){ DataType = PLYProperty.PropertyType.Float, Name = "y" },
+                new PLYProperty(){ DataType = PLYProperty.PropertyType.Float, Name = "z" },
+            };
+
+            string header = WriteHeader(points.Count, props);
+            string body = WriteBody(points);
+
+            return $"{header}{body}";
+        }
+
         private void ReadHeader(StreamReader fileReader)
         {
             int readCount = 0;
             string header = fileReader.ReadLine();
             readCount += header.Length + 1;
-            if (header == MAGIC_STRING)
+            if (header == FILE_HEADER)
             {
                 string line = fileReader.ReadLine();
                 readCount += line.Length + 1;
@@ -274,6 +284,42 @@ namespace SymmetryDetection.FileTypes.PLY
                     Normal = normal
                 });
             }
+        }
+
+
+
+        private static string WriteHeader(int vertexCount, List<PLYProperty> properties)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append(FILE_HEADER);
+            sb.Append(Environment.NewLine);
+            sb.Append(ASCII_TYPE);
+            sb.Append(Environment.NewLine);
+            sb.Append($"{ELEMENT_IDENTIFIER} {VERTEX_KEYWORD} {vertexCount}");
+            sb.Append(Environment.NewLine);
+
+            foreach(var property in properties)
+            {
+                sb.Append($"{PROPERTY_IDENTIFIER} {property.DataType.ToString().ToLower()} {property.Name}");
+                sb.Append(Environment.NewLine);
+            }
+
+            sb.Append(HEADER_END_TEXT);
+            sb.Append(Environment.NewLine);
+            return sb.ToString();
+        }
+        private static string WriteBody(List<Vector3> verts)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            foreach(var vertex in verts)
+            {
+                sb.Append($"{vertex.X} {vertex.Y} {vertex.Z}");
+                sb.Append(Environment.NewLine);
+            }    
+
+
+            return sb.ToString();
         }
     }
 }

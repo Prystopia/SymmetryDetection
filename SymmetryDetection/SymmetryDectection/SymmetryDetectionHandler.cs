@@ -122,7 +122,7 @@ namespace SymmetryDetection.SymmetryDectection
             foreach (var detector in SymmetryDetectors)
             {
                 var typeScore = detector.CalculateGlobalScore();
-                scoreSum += typeScore * ((float)detector.SymmetryMergedIds.Count / 57);
+                scoreSum += typeScore * ((float)detector.SymmetryMergedIds.Count / 29);
             }
             return scoreSum / SymmetryDetectors.Count();
         }
