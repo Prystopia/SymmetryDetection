@@ -15,6 +15,259 @@ namespace SymmetryDetection.Extensions
     public static class ExtensionMethods
     {
         public const float EPSILON = 2.2204460492503131e-16f;
+
+        public static float[] GetColumn(this float[,] matrix, int column)
+        {
+            float[] val = new float[matrix.GetLongLength(column)];
+            for (int i = 0; i < matrix.GetLongLength(column); i++)
+            {
+                val[i] = matrix[i, column];
+            }
+
+            return val;
+        }
+
+        public static double[] GetColumn(this double[,] matrix, int column)
+        {
+            double[] val = new double[matrix.GetLength(1)];
+            for (int i = 0; i < matrix.GetLength(1); i++)
+            {
+                val[i] = matrix[i, column];
+            }
+
+            return val;
+        }
+
+        public static void Fill(this double[,] matrix, double value)
+        {
+            for (int i = 0; i < matrix.GetLength(0); i++)
+            {
+                for (int j = 0; j < matrix.GetLength(1); j++)
+                {
+                    matrix[i, j] = value;
+                }
+            }
+        }
+
+        public static float ClampValue(this float val, float min, float max)
+        {
+            float bounded = val;
+            bounded = Math.Max(bounded, min);
+            bounded = Math.Min(bounded, max);
+            return bounded;
+        }
+
+        public static float ConvertToRadians(this float angle)
+        {
+            return (MathF.PI / 180) * angle;
+        }
+
+        public static double[] GetRow(this double[,] original, int row)
+        {
+            double[] newArray = new double[original.GetLength(1)];
+
+            for (int i = 0; i < original.GetLength(1); i++)
+            {
+                newArray[i] = original[row, i];
+            }
+
+            return newArray;
+        }
+
+        public static float SquaredNorm(this float[] original)
+        {
+            return original.Sum().Abs2();
+        }
+
+        public static double SquaredNorm(this double[] original)
+        {
+            return Math.Sqrt(original.Select(x => Math.Pow(x, 2)).Sum());
+        }
+
+        public static float Abs2(this float value)
+        {
+            return MathF.Abs(MathF.Pow(value, 2));
+        }
+
+        public static float[] Multiply(this float[] original, float factor)
+        {
+            float[] newArray = new float[original.Length];
+
+            for (int i = 0; i < original.Length; i++)
+            {
+                newArray[i] = original[i] * factor;
+            }
+
+            return newArray;
+        }
+
+        public static double[,] Multiply(this double[,] original, double factor)
+        {
+            double[,] newArray = new double[original.GetLength(0), original.GetLength(1)];
+
+            for (int i = 0; i < original.GetLength(0); i++)
+            {
+                for (int j = 0; j < original.GetLength(1); j++)
+                {
+                    newArray[i, j] = original[i,j] * factor;
+                }
+            }
+
+            return newArray;
+        }
+
+        public static Vector3 Multiply(this float[,] original, Vector3 factor)
+        {
+            if (original.GetLength(1) != 3 && original.GetLength(0) != 3)
+            {
+                throw new ArgumentException();
+            }
+            Vector3 newVector = new Vector3();
+            newVector.X = factor.X * original[0, 0] + factor.Y * original[0, 1] + factor.Z * original[0, 2];
+            newVector.Y = factor.X * original[1, 0] + factor.Y * original[1, 1] + factor.Z * original[1, 2];
+            newVector.Z = factor.X * original[2, 0] + factor.Y * original[2, 1] + factor.Z * original[2, 2];
+            return newVector;
+        }
+
+        public static double[,] Subtract(this double[,] original, double[,] value)
+        {
+            double[,] newArray = new double[original.GetLength(0), original.GetLength(1)];
+            for (int i = 0; i < original.GetLength(0); i++)
+            {
+                for (int j = 0; j < original.GetLength(1); j++)
+                {
+                    newArray[i, j] = original[i, j] - value[i, j];
+                }
+            }
+            return newArray;
+        }
+
+        public static T[] To1DArray<T>(this T[,] original)
+        {
+            List<T> array = new List<T>();
+            for (int i = 0; i < original.GetLength(0); i++)
+            {
+                for (int j = 0; j < original.GetLength(1); j++)
+                {
+                    array.Add(original[i, j]);
+                }
+            }
+            return array.ToArray();
+        }
+
+        public static double[,] Multiply(this double[,] original, double[,] other)
+        {
+            int m = original.GetLength(0);
+            int n = original.GetLength(1);
+            int p = other.GetLength(1);
+
+            double[,] result = new double[m, p];
+
+            double[] Bcolj = new double[n];
+            for (int j = 0; j < p; j++)
+            {
+                for (int k = 0; k < n; k++)
+                {
+                    Bcolj[k] = other[k, j];
+                }
+
+                for (int i = 0; i < m; i++)
+                {
+                    double s = 0;
+                    for (int k = 0; k < n; k++)
+                    {
+                        s += original[i, k] * Bcolj[k];
+                    }
+
+                    result[i, j] = s;
+                }
+            }
+            return result;
+        }
+
+        public static double[,] SubMatrix(this double[,] original, int startRow, int endRow, int startCol, int endCol)
+        {
+            double[,] newMatrix = new double[endRow - startRow, endCol - startCol];
+            for (int i = startRow; i < endRow; i++)
+            {
+                for (int j = startCol; j < endCol; j++)
+                {
+                    newMatrix[i - startRow, j - startCol] = original[i, j];
+                }
+            }
+            return newMatrix;
+        }
+
+        public static double[] GetRange(this double[] original, int startRow)
+        {
+            double[] returnArray = new double[original.Length - startRow];
+
+            for(int i = startRow; i < original.Length; i++)
+            {
+                returnArray[i - startRow] = original[i];
+            }
+            return returnArray;
+        }
+
+        public static float[] AbsoluteValue(this float[] norm)
+        {
+            float[] absoluteArray = new float[norm.Length];
+            for (int i = 0; i < norm.Length; i++)
+            {
+                absoluteArray[i] = MathF.Abs(norm[i]);
+            }
+            return absoluteArray;
+        }
+
+        public static float MaxCoefficient(this float[] value, out int colIndex)
+        {
+            var max = value.Max();
+            colIndex = -1;
+            for (int i = 0; i < value.Length; i++)
+            {
+                if (value[i] == max)
+                {
+                    colIndex = i;
+                    break;
+                }
+            }
+            return max;
+        }
+
+        public static float Max(this float[] value)
+        {
+            return value.Max();
+        }
+
+        public static double[] Divide(this double[] val1, double val2)
+        {
+            double[] returnValue = new double[val1.Length];
+
+            for (int i = 0; i < val1.Length; i++)
+            {
+                returnValue[i] = val1[i] / val2;
+            }
+
+            return returnValue;
+        }
+
+        public static T[,] Transpose<T>(this T[,] original)
+        {
+            T[,] newArray = new T[original.GetLength(1), original.GetLength(0)];
+
+            for(int i = 0; i < original.GetLength(0); i++)
+            {
+                for(int j = 0; j < original.GetLength(1); j++)
+                {
+                    newArray[j, i] = original[i, j];
+                }
+            }
+
+
+            return newArray;
+        }
+
+        #region Unused - better than losing the work
         public static Vector3 MultiplyVector(this Vector3 vector, Quaternion rotation)
         {
             float x = rotation.X * 2f;
@@ -49,7 +302,7 @@ namespace SymmetryDetection.Extensions
         {
             float[,] item = new float[numRows, original.GetLength(1)];
 
-            for(int i = 0; i < numRows; i++)
+            for (int i = 0; i < numRows; i++)
             {
                 for (int j = 0; j < original.GetLength(1); j++)
                 {
@@ -60,77 +313,6 @@ namespace SymmetryDetection.Extensions
             return item;
         }
 
-        public static float[] GetColumn(this float[,] matrix, int column)
-        {
-            float[] val = new float[matrix.GetLongLength(column)];
-            for (int i = 0; i < matrix.GetLongLength(column); i++)
-            {
-                val[i] = matrix[i, column];
-            }
-
-            return val;
-        }
-
-        public static double[] GetColumn(this double[,] matrix, int column)
-        {
-            double[] val = new double[matrix.GetLength(1)];
-            for (int i = 0; i < matrix.GetLength(1); i++)
-            {
-                val[i] = matrix[i, column];
-            }
-
-            return val;
-        }
-
-        public static double[,] EnsureZerosLowerTriangle(this double[,] A, int numRows, int numCols)
-        {
-            double[,] returnArray = new double[numRows, numCols];
-            returnArray.Fill(0);
-            //if A is null or incorrect size then return a full array of 0s
-            if (A != null && numRows == A.GetLength(0) && numCols == A.GetLength(1))
-            {
-                //fill only lower triangle with 0s
-                for (int i = 0; i < A.GetLength(0); i++)
-                {
-                    for (int j = 0; j < A.GetLength(1); j++)
-                    {
-                        if (i < j)
-                        {
-                            A[i, j] = 0;
-                        }
-                    }
-                }
-            }
-
-            return returnArray;
-        }
-
-        public static double FindMax(this double[] u, int startIndex, int length)
-        {
-            double max = -1;
-
-            int stopIndex = startIndex + length;
-            for (int index = startIndex; index < stopIndex; index++)
-            {
-                double val = u[index];
-                val = (val < 0.0) ? -val : val;
-                if (val > max)
-                    max = val;
-            }
-
-            return max;
-        }
-
-        public static void Fill(this double[,] matrix, double value)
-        {
-            for (int i = 0; i < matrix.GetLength(0); i++)
-            {
-                for (int j = 0; j < matrix.GetLength(1); j++)
-                {
-                    matrix[i, j] = value;
-                }
-            }
-        }
         public static void SetColumn(this float[,] matrix, int column, float[] newValue)
         {
             for (int i = 0; i < matrix.GetLongLength(column); i++)
@@ -138,7 +320,6 @@ namespace SymmetryDetection.Extensions
                 matrix[i, column] = newValue[i];
             }
         }
-
         public static float[] GetHead(this float[] matrix, int numToReturn)
         {
             float[] returnVal = new float[numToReturn];
@@ -183,50 +364,6 @@ namespace SymmetryDetection.Extensions
             val = x + y + z;
 
             return val;
-        }
-
-        public static float ClampValue(this float val, float min, float max)
-        {
-            float bounded = val;
-            bounded = Math.Max(bounded, min);
-            bounded = Math.Min(bounded, max);
-            return bounded;
-        }
-
-        public static float ConvertToRadians(this float angle)
-        {
-            return (MathF.PI / 180) * angle;
-        }
-
-        public static string GetExportFile(this List<ISymmetry> symmetries)
-        {
-            StringBuilder sb = new StringBuilder();
-
-            sb.Append("SYMMETRY_ID,ORIGIN,NORMAL");
-            sb.Append(Environment.NewLine);
-
-            for (int i = 0; i < symmetries.Count; i++)
-            {
-                var sym = symmetries[i];
-                sb.Append($"{i},");
-                sb.Append($"X: {sym.Origin.X} Y: {sym.Origin.Y} Z: {sym.Origin.Z},");
-                sb.Append($"X: {sym.Normal.X} Y: {sym.Normal.Y} Z: {sym.Normal.Z},");
-                sb.Append(Environment.NewLine);
-            }
-
-            return sb.ToString();
-        }
-
-        public static double[] GetRow(this double[,] original, int row)
-        {
-            double[] newArray = new double[original.GetLength(1)];
-
-            for (int i = 0; i < original.GetLength(1); i++)
-            {
-                newArray[i] = original[row, i];
-            }
-
-            return newArray;
         }
 
         public static float[] GetRow(this float[,] original, int row)
@@ -292,22 +429,6 @@ namespace SymmetryDetection.Extensions
             return norm;
         }
 
-        public static float SquaredNorm(this float[] original)
-        {
-            return original.Sum().Abs2();
-        }
-
-        public static double SquaredNorm(this double[] original)
-        {
-            return Math.Sqrt(original.Select(x => Math.Pow(x, 2)).Sum());
-        }
-
-
-        public static float Abs2(this float value)
-        {
-            return MathF.Abs(MathF.Pow(value, 2));
-        }
-
         public static double Abs2(this double value)
         {
             return Math.Abs(Math.Pow(value, 2));
@@ -364,33 +485,6 @@ namespace SymmetryDetection.Extensions
             return newArray;
         }
 
-        public static float[] Multiply(this float[] original, float factor)
-        {
-            float[] newArray = new float[original.Length];
-
-            for (int i = 0; i < original.Length; i++)
-            {
-                newArray[i] = original[i] * factor;
-            }
-
-            return newArray;
-        }
-
-        public static double[,] Multiply(this double[,] original, double factor)
-        {
-            double[,] newArray = new double[original.GetLength(0), original.GetLength(1)];
-
-            for (int i = 0; i < original.GetLength(0); i++)
-            {
-                for (int j = 0; j < original.GetLength(1); j++)
-                {
-                    newArray[i, j] = original[i,j] * factor;
-                }
-            }
-
-            return newArray;
-        }
-
         public static double[] Multiply(this double[] original, double factor)
         {
             double[] newArray = new double[original.GetLength(0)];
@@ -401,19 +495,6 @@ namespace SymmetryDetection.Extensions
             }
 
             return newArray;
-        }
-
-        public static Vector3 Multiply(this float[,] original, Vector3 factor)
-        {
-            if (original.GetLength(1) != 3 && original.GetLength(0) != 3)
-            {
-                throw new ArgumentException();
-            }
-            Vector3 newVector = new Vector3();
-            newVector.X = factor.X * original[0, 0] + factor.Y * original[0, 1] + factor.Z * original[0, 2];
-            newVector.Y = factor.X * original[1, 0] + factor.Y * original[1, 1] + factor.Z * original[1, 2];
-            newVector.Z = factor.X * original[2, 0] + factor.Y * original[2, 1] + factor.Z * original[2, 2];
-            return newVector;
         }
 
         public static float[] Tail(this float[] original, int numToTake)
@@ -444,14 +525,14 @@ namespace SymmetryDetection.Extensions
         {
             float[] newArray = new float[original.Length];
             //based off left multiplication - rearranges corresponding rows
-            for(int i = 0; i < permutation.GetLength(0); i++)
+            for (int i = 0; i < permutation.GetLength(0); i++)
             {
                 //find indexes of the true values [i,j]
                 //i = row to move original row to
                 //j = row index to move
-                for(int j = 0; j < permutation.GetLength(1); j++)
+                for (int j = 0; j < permutation.GetLength(1); j++)
                 {
-                    if(permutation[i,j])
+                    if (permutation[i, j])
                     {
                         newArray[i] = original[j];
                     }
@@ -462,7 +543,7 @@ namespace SymmetryDetection.Extensions
 
         public static float[] GetDiagonal(this float[,] original)
         {
-            float[] newArray = new float[(original.GetLength(0)  * original.GetLength(1)) / 2];
+            float[] newArray = new float[(original.GetLength(0) * original.GetLength(1)) / 2];
             int count = 0;
             //based off left multiplication - rearranges corresponding rows
             for (int i = 0; i < original.GetLength(0); i++)
@@ -472,7 +553,7 @@ namespace SymmetryDetection.Extensions
                 //j = row index to move
                 for (int j = 0; j < original.GetLength(1); j++)
                 {
-                    if(i == j)
+                    if (i == j)
                     {
                         newArray[count] = original[i, j];
                         count++;
@@ -487,11 +568,11 @@ namespace SymmetryDetection.Extensions
         {
             int count = 0;
             //should really check that length of values is correct
-            for(int i = 0; i < original.GetLength(0); i++)
+            for (int i = 0; i < original.GetLength(0); i++)
             {
-                for(int j = 0; j < original.GetLength(1); j++)
+                for (int j = 0; j < original.GetLength(1); j++)
                 {
-                    if(i == j)
+                    if (i == j)
                     {
                         original[i, j] = values[count];
                         count++;
@@ -499,25 +580,7 @@ namespace SymmetryDetection.Extensions
                 }
             }
         }
-        //public static float[,] BottomRightCorner(this float[,] original, int height, int width)
-        //{
 
-        //}
-
-        //public static void MakeHouseholderInPlace(this float[] original, float tau, out float beta)
-        //{
-
-        //}
-
-        //public static void ApplyHouseholderOnTheLeft(this float[,] original, float[] something, float tau, out float beta)
-        //{
-
-        //}
-
-        //public static void ApplyTranspositionOnTheRight(this bool[,] original, int val1, float val2)
-        //{
-        //    TODO
-        //}
         public static float[,] Multiply(this float[,] original, float factor)
         {
 
@@ -527,17 +590,14 @@ namespace SymmetryDetection.Extensions
             {
                 for (int j = 0; j < original.GetLength(1); j++)
                 {
-                    newArray[i,j] = original[i, j] * factor;
+                    newArray[i, j] = original[i, j] * factor;
                 }
             }
 
             return newArray;
         }
 
-        //public static float[,] TopLeftCorner(this float[,] original, int width, int height)
-        //{
 
-        //}
         public static float[,] Sub(this float[,] original, float[,] value)
         {
             //if (original.GetLength(0) != value.GetLength(0) || this.columns !== matrix.columns)
@@ -560,38 +620,10 @@ namespace SymmetryDetection.Extensions
             double[] newArray = new double[original.GetLength(0)];
             for (int i = 0; i < original.GetLength(0); i++)
             {
-                    newArray[i] = original[i] - value[i];
+                newArray[i] = original[i] - value[i];
             }
             return newArray;
         }
-
-        public static double[,] Subtract(this double[,] original, double[,] value)
-        {
-            double[,] newArray = new double[original.GetLength(0), original.GetLength(1)];
-            for (int i = 0; i < original.GetLength(0); i++)
-            {
-                for (int j = 0; j < original.GetLength(1); j++)
-                {
-                    newArray[i, j] = original[i, j] - value[i, j];
-                }
-            }
-            return newArray;
-        }
-
-        public static T[] To1DArray<T>(this T[,] original)
-        {
-            List<T> array = new List<T>();
-            for (int i = 0; i < original.GetLength(0); i++)
-            {
-                for (int j = 0; j < original.GetLength(1); j++)
-                {
-                    array.Add(original[i, j]);
-                }
-            }
-            return array.ToArray();
-        }
-
-       
 
         public static float[,] MatrixMultiply(this float[,] original, float[][] other)
         {
@@ -636,7 +668,7 @@ namespace SymmetryDetection.Extensions
             {
                 for (int k = 0; k < n; k++)
                 {
-                    Bcolj[k] = other[k,j];
+                    Bcolj[k] = other[k, j];
                 }
 
                 for (int i = 0; i < m; i++)
@@ -653,8 +685,6 @@ namespace SymmetryDetection.Extensions
             return result;
         }
 
-
-
         public static float[,] MatrixMultiply(this float[][] original, float[,] other)
         {
             int m = original.GetLength(0);
@@ -668,7 +698,7 @@ namespace SymmetryDetection.Extensions
             {
                 for (int k = 0; k < n; k++)
                 {
-                    Bcolj[k] = other[k,j];
+                    Bcolj[k] = other[k, j];
                 }
 
                 for (int i = 0; i < m; i++)
@@ -724,7 +754,7 @@ namespace SymmetryDetection.Extensions
 
             float sum = 0;
 
-            for(int i = 0; i < array.Length; i++)
+            for (int i = 0; i < array.Length; i++)
             {
                 sum += Abs2(array[i]);
             }
@@ -763,35 +793,6 @@ namespace SymmetryDetection.Extensions
 
 
         }
-        public static double[,] Multiply(this double[,] original, double[,] other)
-        {
-            int m = original.GetLength(0);
-            int n = original.GetLength(1);
-            int p = other.GetLength(1);
-
-            double[,] result = new double[m, p];
-
-            double[] Bcolj = new double[n];
-            for (int j = 0; j < p; j++)
-            {
-                for (int k = 0; k < n; k++)
-                {
-                    Bcolj[k] = other[k, j];
-                }
-
-                for (int i = 0; i < m; i++)
-                {
-                    double s = 0;
-                    for (int k = 0; k < n; k++)
-                    {
-                        s += original[i, k] * Bcolj[k];
-                    }
-
-                    result[i, j] = s;
-                }
-            }
-            return result;
-        }
 
         public static float[,] SubMatrix(this float[,] original, int startRow, int endRow, int startCol, int endCol)
         {
@@ -806,43 +807,11 @@ namespace SymmetryDetection.Extensions
             return newMatrix;
         }
 
-        public static double[,] SubMatrix(this double[,] original, int startRow, int endRow, int startCol, int endCol)
-        {
-            double[,] newMatrix = new double[endRow - startRow, endCol - startCol];
-            for (int i = startRow; i < endRow; i++)
-            {
-                for (int j = startCol; j < endCol; j++)
-                {
-                    newMatrix[i - startRow, j - startCol] = original[i, j];
-                }
-            }
-            return newMatrix;
-        }
-
-        public static double[] GetRange(this double[] original, int startRow)
-        {
-            double[] returnArray = new double[original.Length - startRow];
-
-            for(int i = startRow; i < original.Length; i++)
-            {
-                returnArray[i - startRow] = original[i];
-            }
-            return returnArray;
-        }
-
-        //public static void Fill(this float[] original, float value)
-        //{
-        //    for(int i = 0; i < original.Length; i++)
-        //    {
-        //        original[i] = value;
-        //    }
-        //}
-
         public static void SwapCol(this float[,] original, int originalColIndex, int replacementColIndex)
         {
             var temp = original.GetColumn(originalColIndex);
 
-            for(int i = 0; i < original.GetLength(0); i++)
+            for (int i = 0; i < original.GetLength(0); i++)
             {
                 original[i, originalColIndex] = original[i, replacementColIndex];
                 original[i, replacementColIndex] = temp[i];
@@ -957,31 +926,6 @@ namespace SymmetryDetection.Extensions
                 return abig * MathF.Sqrt(1 + MathF.Abs(MathF.Pow(asml / abig, 2)));
         }
 
-        public static float[] AbsoluteValue(this float[] norm)
-        {
-            float[] absoluteArray = new float[norm.Length];
-            for (int i = 0; i < norm.Length; i++)
-            {
-                absoluteArray[i] = MathF.Abs(norm[i]);
-            }
-            return absoluteArray;
-        }
-
-        public static float MaxCoefficient(this float[] value, out int colIndex)
-        {
-            var max = value.Max();
-            colIndex = -1;
-            for (int i = 0; i < value.Length; i++)
-            {
-                if (value[i] == max)
-                {
-                    colIndex = i;
-                    break;
-                }
-            }
-            return max;
-        }
-
         public static float Norm(this float[] original)
         {
             return original.Sum();
@@ -991,11 +935,11 @@ namespace SymmetryDetection.Extensions
         {
             float[,] newArray = new float[original.GetLength(0), original.GetLength(1)];
 
-            for(int i = 0; i < original.GetLength(0); i++)
+            for (int i = 0; i < original.GetLength(0); i++)
             {
-                for(int j = 0; j < original.GetLength(1); j++)
+                for (int j = 0; j < original.GetLength(1); j++)
                 {
-                    newArray[i, j] = (i <= j) ? original[i, j] : 0; 
+                    newArray[i, j] = (i <= j) ? original[i, j] : 0;
                 }
             }
 
@@ -1030,11 +974,6 @@ namespace SymmetryDetection.Extensions
             }
 
             return newArray;
-        }
-
-        public static float Max(this float[] value)
-        {
-            return value.Max();
         }
 
         public static float[] CrosswiseProduct(this float[] val1, float[] val2)
@@ -1073,28 +1012,18 @@ namespace SymmetryDetection.Extensions
             return returnValue;
         }
 
-        public static double[] Divide(this double[] val1, double val2)
-        {
-            double[] returnValue = new double[val1.Length];
-
-            for (int i = 0; i < val1.Length; i++)
-            {
-                returnValue[i] = val1[i] / val2;
-            }
-
-            return returnValue;
-        }
 
         public static float[] CrosswiseMax(this float[] val, float[] val2)
         {
             float[] returnVal = new float[val.Length];
-            for(int i = 0; i < val.Length; i++)
+            for (int i = 0; i < val.Length; i++)
             {
                 returnVal[i] = MathF.Max(val[i], val2[i]);
             }
 
             return returnVal;
         }
+
 
         public static float[] Minus(this float[] item1, float[] item2)
         {
@@ -1111,13 +1040,14 @@ namespace SymmetryDetection.Extensions
         {
             int[] indices = new int[initial.Length];
 
-            for(int i = 0; i < initial.Length; i++)
+            for (int i = 0; i < initial.Length; i++)
             {
                 indices[i] = i;
             }
 
             return indices;
         }
+
 
         public static float[,] Adjoint(this float[,] array)
         {
@@ -1141,36 +1071,45 @@ namespace SymmetryDetection.Extensions
             return newArray;
         }
 
-        public static float[,] Transpose(this float[,] original)
+        public static double[,] EnsureZerosLowerTriangle(this double[,] A, int numRows, int numCols)
         {
-            float[,] newArray = new float[original.GetLength(1), original.GetLength(0)];
-
-            for(int i = 0; i < original.GetLength(0); i++)
+            double[,] returnArray = new double[numRows, numCols];
+            returnArray.Fill(0);
+            //if A is null or incorrect size then return a full array of 0s
+            if (A != null && numRows == A.GetLength(0) && numCols == A.GetLength(1))
             {
-                for(int j = 0; j < original.GetLength(1); j++)
+                //fill only lower triangle with 0s
+                for (int i = 0; i < A.GetLength(0); i++)
                 {
-                    newArray[j, i] = original[i, j];
+                    for (int j = 0; j < A.GetLength(1); j++)
+                    {
+                        if (i < j)
+                        {
+                            A[i, j] = 0;
+                        }
+                    }
                 }
             }
 
-
-            return newArray;
+            return returnArray;
         }
 
-        public static double[,] Transpose(this double[,] original)
+        public static double FindMax(this double[] u, int startIndex, int length)
         {
-            double[,] newArray = new double[original.GetLength(1), original.GetLength(0)];
+            double max = -1;
 
-            for (int i = 0; i < original.GetLength(0); i++)
+            int stopIndex = startIndex + length;
+            for (int index = startIndex; index < stopIndex; index++)
             {
-                for (int j = 0; j < original.GetLength(1); j++)
-                {
-                    newArray[j, i] = original[i, j];
-                }
+                double val = u[index];
+                val = (val < 0.0) ? -val : val;
+                if (val > max)
+                    max = val;
             }
 
-
-            return newArray;
+            return max;
         }
+
+        #endregion
     }
 }

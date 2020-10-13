@@ -6,8 +6,8 @@ using System.Text;
 
 namespace SymmetryDetection.Interfaces
 {
-    public interface IScoreService
+    public interface IScoreService<T> where T : ISymmetryParameters
     {
-        void CalculateSymmetryPointSymmetryScores(PointCloud cloud, ISymmetry symmetry, bool ignoreDistances, out List<float> pointSymmetryScores, out List<Correspondence> correspondences);
+        void CalculateSymmetryPointSymmetryScores(PointCloud cloud, ISymmetry symmetry, bool ignoreDistances, T parameters, out List<float> pointSymmetryScores, out List<Correspondence> correspondences);
     }
 }

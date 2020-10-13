@@ -2,6 +2,7 @@
 using SymmetryDetection.Extensions;
 using SymmetryDetection.Helpers;
 using SymmetryDetection.Interfaces;
+using SymmetryDetection.Parameters;
 using SymmetryDetection.SymmetryDectection;
 using System;
 using System.Collections.Generic;
@@ -10,10 +11,9 @@ using System.Text;
 
 namespace SymmetryDetection.ScoreServices
 {
-    public class ReflectionalSymmetryScoreService : IScoreService
+    public class ReflectionalSymmetryScoreService : IScoreService<ReflectionalSymmetryParameters>
     {
-        private const float MAX_SYMMETRY_CORRESPONDENCE_REFLECTED_DISTANCE = 0.5f;
-        public void CalculateSymmetryPointSymmetryScores(PointCloud cloud, ISymmetry symmetry, bool ignoreDistance, out List<float> pointSymmetryScores, out List<Correspondence> correspondences)
+        public void CalculateSymmetryPointSymmetryScores(PointCloud cloud, ISymmetry symmetry, bool ignoreDistance, ReflectionalSymmetryParameters parameters,  out List<float> pointSymmetryScores, out List<Correspondence> correspondences)
         {
             pointSymmetryScores = new List<float>();
             correspondences = new List<Correspondence>();
@@ -40,15 +40,9 @@ namespace SymmetryDetection.ScoreServices
                 };
 
                 var neighbours = cloud.GetClosetNeighbours(searchPoint, 1);
-                if (ignoreDistance || neighbours[0].distance <= MAX_SYMMETRY_CORRESPONDENCE_REFLECTED_DISTANCE)
+                if (ignoreDistance || neighbours[0].distance <= parameters.MAX_SYMMETRY_CORRESPONDENCE_REFLECTED_DISTANCE)
                 {
                     Vector3 targetPoint = neighbours[0].neighbour.Position;
-                    Vector3 targetNormal = neighbours[0].neighbour.Normal;
-
-                    // If point belongs to segment boundary, we reduce it's score in half, since normals at the boundary of the segment are usually noisy - noise isn't something we need to worry about so ignore for the moment
-                    //if (std::find(cloud_ds_boundary_point_ids.begin(), cloud_ds_boundary_point_ids.end(), pointId) != cloud_ds_boundary_point_ids.end() ||
-                    //      std::find(cloud_boundary_point_ids.begin(), cloud_boundary_point_ids.end(), neighbours[0]) != cloud_boundary_point_ids.end())
-                    //    continue;
 
                     float symmetryScore = ReflectionHelpers.GetReflectionSymmetryPositionFitError(srcPoint, targetPoint, symmetry);
 

@@ -1,5 +1,4 @@
 ﻿using System;
-using Accord.Math;
 using SymmetryDetection.Optimisation;
 using Xunit;
 
@@ -36,14 +35,10 @@ namespace SymmetryDetection.Test
             A[3, 1] = 3;
             A[3, 2] = 7;
 
-            // var errorEncountered = this.Service.Decompose(A);
-            //var r = this.Service.GetR();
-            double[] tau = new double[1];
-            double[,] r = new double[1, 1];
-            alglib.ortfac.rmatrixqr(ref A, A.GetLength(0), A.GetLength(1), ref tau, new alglib.xparams(0));
-            alglib.ortfac.rmatrixqrunpackr(A, A.GetLength(0), A.GetLength(1), ref r, new alglib.xparams(0));
+            var errorEncountered = this.Service.Decompose(ref A);
+            var r = this.Service.GetR();
 
-            //Assert.False(errorEncountered);
+            Assert.False(errorEncountered);
             Assert.Equal(4, r.GetLength(0));
             Assert.Equal(3, r.GetLength(1));
             Assert.Equal(2, Math.Round(r[0, 0]));
@@ -77,11 +72,10 @@ namespace SymmetryDetection.Test
             A[3, 1] = -1;
             A[3, 2] = 0;
 
-            double[] tau = new double[1];
-            double[,] r = new double[0, 0];
-            alglib.ortfac.rmatrixqr(ref A, A.GetLength(0), A.GetLength(1), ref tau, new alglib.xparams(0));
-            alglib.ortfac.rmatrixqrunpackr(A, A.GetLength(0), A.GetLength(1), ref r, new alglib.xparams(0));
+            var errorEncountered = this.Service.Decompose(ref A);
+            var r = this.Service.GetR();
 
+            Assert.False(errorEncountered);
             Assert.Equal(4, r.GetLength(0));
             Assert.Equal(3, r.GetLength(1));
             Assert.Equal(-2, Math.Round(r[0, 0]));
@@ -128,13 +122,11 @@ namespace SymmetryDetection.Test
             A[2, 2] = 0;
 
 
-            double[] tau = new double[1];
-            double[,] r = new double[1, 1];
-            double[,] q = new double[1, 1];
-            alglib.ortfac.rmatrixqr(ref A, A.GetLength(0), A.GetLength(1), ref tau, new alglib.xparams(0));
-            alglib.ortfac.rmatrixqrunpackr(A, A.GetLength(0), A.GetLength(1), ref r, new alglib.xparams(0));
-            alglib.ortfac.rmatrixqrunpackq(A, A.GetLength(0), A.GetLength(1), tau, A.GetLength(0), ref q, new alglib.xparams(0));
+            var errorEncountered = this.Service.Decompose(ref A);
+            var r = this.Service.GetR();
+            var q = this.Service.GetQ();
 
+            Assert.False(errorEncountered);
             Assert.Equal(3, r.GetLength(0));
             Assert.Equal(3, r.GetLength(1));
             Assert.Equal(-2.45, Math.Round(r[0, 0], 2));
@@ -157,11 +149,11 @@ namespace SymmetryDetection.Test
             Assert.Equal(0.17, Math.Round(q[1, 2], 2));
             Assert.Equal(-0.41, Math.Round(q[2, 0], 2));
             Assert.Equal(0.35, Math.Round(q[2, 1], 2));
-            Assert.Equal(0.85, Math.Round(q[2, 2], 2)); // check this with R as the sign is incorrect - but not on mine or the other implementation
+            Assert.Equal(0.85, Math.Round(q[2, 2], 2));
         }
 
         [Fact]
-        public void Decompose_Full_Example_5()
+        public void Decompose_Full_Example_4()
         {
             double[,] A = new double[3, 3];
             A[0, 0] = 1;
@@ -184,70 +176,6 @@ namespace SymmetryDetection.Test
             Assert.Equal(-3.32, Math.Round(r[0, 0], 2));
             Assert.Equal(0, Math.Round(r[1, 0], 2));
             Assert.Equal(0, Math.Round(r[1, 0], 2));
-        }
-
-        [Fact]
-        public void Decompose_Full_Example_4()
-        {
-            double[,] A = new double[7, 5];
-            A[0, 0] = 1;
-            A[0, 1] = 5;
-            A[0, 2] = -1;
-            A[0, 3] = 8;
-            A[0, 4] = 3;
-            A[1, 0] = -1;
-            A[1, 1] = 4;
-            A[1, 2] = 12;
-            A[1, 3] = 6;
-            A[1, 4] = -9;
-            A[2, 0] = 0;
-            A[2, 1] = 3;
-            A[2, 2] = 16;
-            A[2, 3] = -1;
-            A[2, 4] = -6;
-            A[3, 0] = -8;
-            A[3, 1] = 1;
-            A[3, 2] = 4;
-            A[3, 3] = 9;
-            A[3, 4] = -2;
-            A[4, 0] = 1;
-            A[4, 1] = 2;
-            A[4, 2] = 7;
-            A[4, 3] = 8;
-            A[4, 4] = 0;
-            A[5, 0] = 15;
-            A[5, 1] = 22;
-            A[5, 2] = 17;
-            A[5, 3] = -1;
-            A[5, 4] = 5;
-            A[6, 0] = 23;
-            A[6, 1] = -7;
-            A[6, 2] = 1;
-            A[6, 3] = 7;
-            A[6, 4] = 9;
-            //var errorEncountered = this.Service.Decompose(A);
-            //var r = this.Service.GetR();
-
-            double[,] tau = new double[1,1];
-            //alglib.ortfac.rmatrixqr(ref A, A.GetLength(0), A.GetLength(1), ref tau, new alglib.xparams(0));
-
-            alglib.ortfac.rmatrixqrunpackr(A, A.GetLength(0), A.GetLength(1), ref tau, new alglib.xparams(0));
-
-            //issue seems to be the QR array is the wrong size - 3,4 instead of 4,3 
-
-            //Assert.False(errorEncountered);
-            //Assert.Equal(7, r.GetLength(0));
-            //Assert.Equal(5, r.GetLength(1));
-            //Assert.Equal(-1.2458, Math.Round(r[0, 0], 4));
-            //Assert.Equal(-6.2820, Math.Round(r[0, 1], 4));
-            //Assert.Equal(-10.6097, Math.Round(r[0, 2], 4));
-            //Assert.Equal(0, Math.Round(r[1, 0], 4));
-            //Assert.Equal(-1.4375, Math.Round(r[1, 1], 4));
-            //Assert.Equal(-17.4780, Math.Round(r[1, 2], 2));
-            //Assert.Equal(0, Math.Round(r[2, 0], 2));
-            //Assert.Equal(0, Math.Round(r[2, 1], 2));
-            //Assert.Equal(-1.4380, Math.Round(r[2, 2], 4));
-
         }
     }
 }

@@ -22,7 +22,7 @@ namespace SymmetryDetection.Optimisation
         public double Delta => 1e-8f;
 
         public double InitialLambda { get; set; }
-        public LMFunction Functor { get; set; }
+        public IOptimisationFunction Functor { get; set; }
         public double InitialCost { get; set; }
         public double FinalCost { get; set; }
 
@@ -37,7 +37,7 @@ namespace SymmetryDetection.Optimisation
 
         private ILinearSolver Solver { get; set; }
 
-        public LevenbergMarquadtEJML(LMFunction functor, ILinearSolver solver, double initialLambda = 1)
+        public LevenbergMarquadtEJML(IOptimisationFunction functor, ILinearSolver solver, double initialLambda = 1)
         {
             this.MaxIterations = 400;
             this.Functor = functor;
