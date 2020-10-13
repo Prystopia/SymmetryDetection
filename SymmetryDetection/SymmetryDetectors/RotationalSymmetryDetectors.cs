@@ -1,4 +1,5 @@
 ﻿using SymmetryDetection.DataTypes;
+using SymmetryDetection.Enums;
 using SymmetryDetection.Interfaces;
 using SymmetryDetection.Optimisation;
 using SymmetryDetection.SymmetryDectection;
@@ -11,6 +12,7 @@ namespace SymmetryDetection.SymmetryDetectors
 {
     public class RotationalSymmetryDetectors : ISymmetryDetector
     {
+        public SymmetryTypeEnum SymmetryType => SymmetryTypeEnum.Rotational;
         public const float MAX_SYMMETRY_SCORE = 0;
         private const float MAX_OCCLUSION_SCORE = 0;
         private const float MAX_PERPENDICULAR_SCORE = 0;
@@ -23,7 +25,7 @@ namespace SymmetryDetection.SymmetryDetectors
         public List<float> CorrespondenceInlierScores { get; set; }
         public List<int> SymmetryFilteredIds { get; set; }
         public List<int> SymmetryMergedIds { get; set; }
-
+        public List<ISymmetry> MergedSymmetries { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         private List<ISymmetry> InitialSymmetries { get; set; }
         private PointCloud Cloud { get; set; }
         private PCA PCA { get; set; }
@@ -129,6 +131,16 @@ namespace SymmetryDetection.SymmetryDetectors
         }
 
         public List<int> MergeDuplicateSymmetries(List<ISymmetry> symmetries, List<int> indices, List<Vector3> symmetryReferencePoints, List<float> occlusionScores)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<ISymmetry> MergeDuplicateSymmetries(List<ISymmetry> filteredSymmetries, List<Vector3> symmetryReferencePoints, List<float> occlusionScores)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<ISymmetry> MergeDuplicateSymmetries(List<ISymmetry> filteredSymmetries, List<Vector3> symmetryReferencePoints)
         {
             throw new NotImplementedException();
         }

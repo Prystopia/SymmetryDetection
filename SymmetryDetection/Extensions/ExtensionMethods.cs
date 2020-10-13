@@ -1,14 +1,8 @@
-﻿using Microsoft.Win32.SafeHandles;
-using SymmetryDetection.DataTypes;
-using SymmetryDetection.Interfaces;
-using SymmetryDetection.SymmetryDectection;
+﻿using SymmetryDetection.DataTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 
 namespace SymmetryDetection.Extensions
 {

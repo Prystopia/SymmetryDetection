@@ -33,7 +33,7 @@ namespace SymmetryDetection.ScoreServices
                 Vector3 srcNormalReflected = PointHelpers.ReflectNormal(srcNormal, symmetry);
 
                 // Find neighbours in a radius   
-                PointXYZRGBNormal searchPoint = new PointXYZRGBNormal()
+                PointXYZNormal searchPoint = new PointXYZNormal()
                 {
                     Position = srcPointReflected,
                     Normal = srcNormalReflected,

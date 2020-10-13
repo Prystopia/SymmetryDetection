@@ -1,5 +1,6 @@
 ﻿using SymmetryDetection.Clustering;
 using SymmetryDetection.DataTypes;
+using SymmetryDetection.Enums;
 using SymmetryDetection.Extensions;
 using SymmetryDetection.Helpers;
 using SymmetryDetection.Interfaces;
@@ -17,20 +18,15 @@ namespace SymmetryDetection.SymmetryDectection
 {
     public class ReflectionalSymmetryDetector : ISymmetryDetector
     {
+        public SymmetryTypeEnum SymmetryType => SymmetryTypeEnum.Reflectional;
         public PointCloud Cloud { get; set; }
         public PCA PCA { get; set; }
-        public Vector3 CloudMean { get; set; }
-        public List<Correspondence> Correspondences { get; set; }
-        public List<ISymmetry> SymmetriesInitial { get; set; }
-        public List<ISymmetry> SymmetriesRefined { get; set; }
-        public List<float> OcclusionScores { get; set; }
-        public List<float> CloudInlierScores { get; set; }
-        public List<float> CorrespondenceInlierScores { get; set; }
-        public List<List<float>> PointSymmetryScores { get; set; }
-        public List<List<float>> PointOcclusionScores { get; set; }
-        public List<int> SymmetryFilteredIds { get; set; }
-        public List<int> SymmetryMergedIds { get; set; }
+        public List<ISymmetry> MergedSymmetries { get; set; }
 
+        private List<Correspondence> Correspondences { get; set; }
+        private List<ISymmetry> InitialSymmetries { get; set; }
+        private List<ISymmetry> RefinedSymmetries { get; set; }
+        private List<ISymmetry> FilteredSymmetries { get; set; }
         private IScoreService<ReflectionalSymmetryParameters> ReflectionalScoreService { get; set; }
         private ReflectionalSymmetryParameters Parameters { get; set; }
 
@@ -51,48 +47,22 @@ namespace SymmetryDetection.SymmetryDectection
 
         public void Detect()
         {
-            CloudMean = Vector3.Zero;
-            SymmetriesRefined = new List<ISymmetry>();
+            RefinedSymmetries = new List<ISymmetry>();
             Correspondences = new List<Correspondence>();
-            OcclusionScores = new List<float>();
-            PointSymmetryScores = new List<List<float>>();
-            CloudInlierScores = new List<float>();
-            CorrespondenceInlierScores = new List<float>();
-            PointOcclusionScores = new List<List<float>>();
-            SymmetryFilteredIds = new List<int>();
-            SymmetryMergedIds = new List<int>();
 
-            SymmetriesInitial = GetInitialSymmetries(Cloud);
+            GetInitialSymmetries(Cloud);
 
-            List<ISymmetry> symmetriesTMP = new List<ISymmetry>();
-            List<float> occlusionScoresTMP = new List<float>();
-            List<float> cloudInlierScoresTMP = new List<float>();
-            List<float> correspInlierScoresTMP = new List<float>();
-            List<List<float>> pointSymmetryScoresTMP = new List<List<float>>();
-            List<List<float>> pointOcclusionScoresTMP = new List<List<float>>();
-            List<bool> validSymTableTMP = new List<bool>();
-            //List<bool> filteredSymTableTMP = new List<bool>();  Doesn't seem to be used
-            List<Correspondence> symmetryCorrespTMP = new List<Correspondence>();
-
-            for (int j = 0; j < SymmetriesInitial.Count; j++)
+            foreach(var currentSymmetry in InitialSymmetries)
             {
-                ISymmetry currentSymmetry = SymmetriesInitial[j];
                 List<Correspondence> currentCorrespondances = new List<Correspondence>();
-                var refined = RefineSymmetryPosition(Cloud, currentSymmetry);
+                ISymmetry refined = RefineSymmetryPosition(Cloud, currentSymmetry);
                 if (RefineGlobalSymmetryPosition(Cloud, refined))
                 {
-                    List<float> currentPointSymmetryScores = new List<float>(), currentPointOcclusionScores = new List<float>();
-                    float currentOcclusionScore = 0, currentCloudInlierScore = 0, currentCorrespondanceInlierScore = 0;
+                    List<float> currentPointSymmetryScores = new List<float>();
 
                     this.ReflectionalScoreService.CalculateSymmetryPointSymmetryScores(Cloud, currentSymmetry, false, Parameters, out List<float> symmScores, out List<Correspondence> symCorrespondences);
                     currentCorrespondances.AddRange(symCorrespondences);
                     currentPointSymmetryScores.AddRange(symmScores);
-
-                    // If an occupancy map is available - calculate occlusion score. If not set occlusion scores to a value that will pass the occlusion filter. -- Occlusion map is not available
-                    for (int i = 0; i < Cloud.Points.Count; i++)
-                    {
-                        currentPointOcclusionScores.Add(0);
-                    }
 
                     float inlierScoreSum = 0;
 
@@ -101,87 +71,35 @@ namespace SymmetryDetection.SymmetryDectection
                         inlierScoreSum += (1 - currentPointSymmetryScores[k]);
                     }
 
-                    currentCloudInlierScore = inlierScoreSum / Cloud.Points.Count;
-                    currentCorrespondanceInlierScore = inlierScoreSum / currentCorrespondances.Count;
 
-                    symmetriesTMP.Add(currentSymmetry);
-                    occlusionScoresTMP.Add(currentOcclusionScore);
-                    cloudInlierScoresTMP.Add(currentCloudInlierScore);
-                    correspInlierScoresTMP.Add(currentCorrespondanceInlierScore);
-                    pointSymmetryScoresTMP.Add(currentPointSymmetryScores);
-                    pointOcclusionScoresTMP.Add(currentPointOcclusionScores);
-                    validSymTableTMP.Add(true);
-                    symmetryCorrespTMP.AddRange(currentCorrespondances);
-                }
-            }
+                    //symmetry score is the average error for each point in the cloud
+                    refined.SymmetryScore = (inlierScoreSum / Cloud.Points.Count);
+                    ((ReflectionalSymmetry)refined).CorrespondenceInlierScore = inlierScoreSum / currentCorrespondances.Count;
+                    refined.SymmetryType = this.SymmetryType;
+                    RefinedSymmetries.Add(refined);
 
-            for (int j = 0; j < validSymTableTMP.Count; j++)
-            {
-                bool validSym = validSymTableTMP[j];
-                if (validSym)
-                {
-                    SymmetriesRefined.Add(symmetriesTMP[j]);
-                    OcclusionScores.Add(occlusionScoresTMP[j]);
-                    CloudInlierScores.Add(cloudInlierScoresTMP[j]);
-                    CorrespondenceInlierScores.Add(correspInlierScoresTMP[j]);
-                    PointSymmetryScores.Add(pointSymmetryScoresTMP[j]);
-                    PointOcclusionScores.Add(pointOcclusionScoresTMP[j]);
-                    Correspondences.Add(symmetryCorrespTMP[j]);
+                    Correspondences.Add(currentCorrespondances[0]);
                 }
             }
         }
 
         public void Filter()
         {
-            SymmetryFilteredIds = new List<int>();
-            for (int i = 0; i < SymmetriesRefined.Count; i++)
+            FilteredSymmetries = new List<ISymmetry>();
+            foreach(ReflectionalSymmetry symmetry in RefinedSymmetries)
             {
-                if (OcclusionScores[i] < Parameters.MAX_OCCLUSION_SCORE && CloudInlierScores[i] > Parameters.MIN_CLOUD_INLIER_SCORE && CorrespondenceInlierScores[i] > Parameters.MIN_CORRESPONDANCE_INLIER_SCORE)
+                if (symmetry.SymmetryScore > Parameters.MIN_CLOUD_INLIER_SCORE && symmetry.CorrespondenceInlierScore > Parameters.MIN_CORRESPONDANCE_INLIER_SCORE)
                 {
-                    SymmetryFilteredIds.Add(i);
+                    FilteredSymmetries.Add(symmetry);
                 }
             }
         }
-
         public void Merge()
         {
-            List<Vector3> referencePoints = new List<Vector3>();
-            for (int i = 0; i < SymmetriesRefined.Count; i++)
-            {
-                referencePoints.Add(CloudMean);
-            }
-            if (referencePoints.Any())
-            {
-                SymmetryMergedIds = MergeDuplicateSymmetries(SymmetriesRefined, SymmetryFilteredIds, referencePoints, OcclusionScores);
-            }
-        }
+            MergedSymmetries = new List<ISymmetry>();
 
-        public List<int> MergeDuplicateSymmetries(List<ISymmetry> symmetries, List<int> indices, List<Vector3> symmetryReferencePoints, List<float> occlusionScores)
-        {
-            List<int> mergedSymmetryIds = new List<int>();
-            Graph symmetryAdjacency = new Graph(indices.Count);
-
-            for (int i = 0; i < indices.Count; i++)
-            {
-                int srcId = indices[i];
-                ISymmetry srcHypothesis = symmetries[srcId];
-                Vector3 srcReferencePoint = symmetryReferencePoints[srcId];
-                for (int j = srcId + 1; j < indices.Count; j++)
-                {
-                    int tgtID = indices[j];
-                    var targetHypothesis = symmetries[tgtID];
-                    Vector3 targetReferencePoint = symmetryReferencePoints[j];
-                    if (Parameters.MAX_REFERENCE_POINT_DISTANCE <= 0 || MathsHelpers.PointToPointDistance(srcReferencePoint, targetReferencePoint) <= Parameters.MAX_REFERENCE_POINT_DISTANCE)
-                    {
-                        var referencePoint = (srcReferencePoint + targetReferencePoint) / 2f;
-                        PointHelpers.ReflectedSymmetryDifference(targetHypothesis, referencePoint, srcHypothesis, out float angleDiff, out float distanceDiff);
-                        if (angleDiff < Parameters.MAX_NORMAL_ANGLE_DIFF && distanceDiff < Parameters.MAX_DISTANCE_DIFF)
-                        {
-                            symmetryAdjacency.AddEdge(i, j);
-                        }
-                    }
-                }
-            }
+            var symmetryAdjacency = InitialiseSimalarityGraph();
+            
             BronKerbosch bk = new BronKerbosch(symmetryAdjacency);
             List<IList<int>> cliques = bk.RunAlgorithm(1);
             List<IList<int>> hypothesisClusters = new List<IList<int>>();
@@ -227,34 +145,67 @@ namespace SymmetryDetection.SymmetryDectection
             foreach (var cluster in hypothesisClusters)
             {
                 float minScore = float.MaxValue;
-                int bestHypothesisId = -1;
+                ISymmetry bestHypothesis = null;
                 for (int i = 0; i < cluster.Count; i++)
                 {
-                    int hypothesisId = SymmetryFilteredIds[cluster[i]];
-                    if (occlusionScores[hypothesisId] < minScore)
+                    ISymmetry hypothesis = FilteredSymmetries[cluster[i]];
+                    if (hypothesis.SymmetryScore < minScore)
                     {
-                        minScore = occlusionScores[hypothesisId];
-                        bestHypothesisId = hypothesisId;
+                        minScore = hypothesis.SymmetryScore;
+                        bestHypothesis = hypothesis;
                     }
                 }
-                mergedSymmetryIds.Add(bestHypothesisId);
+                MergedSymmetries.Add(bestHypothesis);
             }
-            return mergedSymmetryIds;
+        }
+        public float CalculateGlobalScore()
+        {
+            float inlierScoreSum = 0;
+            foreach (ReflectionalSymmetry symmetry in MergedSymmetries)
+            {
+                inlierScoreSum += symmetry.SymmetryScore;
+            }
+            //average error for all points across all detected symmetries;
+            return inlierScoreSum / (MergedSymmetries.Count > 0 ? MergedSymmetries.Count : 1);
         }
 
-        public List<ISymmetry> GetInitialSymmetries(PointCloud cloud)
+        private Graph InitialiseSimalarityGraph()
         {
-            List<ISymmetry> symmetries = new List<ISymmetry>();
+            Graph symmetryAdjacency = new Graph(FilteredSymmetries.Count);
+
+            for (int i = 0; i < FilteredSymmetries.Count; i++)
+            {
+                var srcHypothesis = FilteredSymmetries[i];
+                Vector3 srcReferencePoint = PCA.Mean;
+                for (int j = i + 1; j < FilteredSymmetries.Count; j++)
+                {
+                    var targetHypothesis = FilteredSymmetries[j];
+                    Vector3 targetReferencePoint = PCA.Mean;
+                    if (Parameters.MAX_REFERENCE_POINT_DISTANCE <= 0 || MathsHelpers.PointToPointDistance(srcReferencePoint, targetReferencePoint) <= Parameters.MAX_REFERENCE_POINT_DISTANCE)
+                    {
+                        var referencePoint = (srcReferencePoint + targetReferencePoint) / 2f;
+                        PointHelpers.ReflectedSymmetryDifference(targetHypothesis, referencePoint, srcHypothesis, out float angleDiff, out float distanceDiff);
+                        if (angleDiff < Parameters.MAX_NORMAL_ANGLE_DIFF && distanceDiff < Parameters.MAX_DISTANCE_DIFF)
+                        {
+                            symmetryAdjacency.AddEdge(i, j);
+                        }
+                    }
+                }
+            }
+            return symmetryAdjacency;
+        }
+
+        private void GetInitialSymmetries(PointCloud cloud)
+        {
+            InitialSymmetries = new List<ISymmetry>();
             //use a step every 45 degrees 360/45 = 8 
             List<Vector3> spherePoints = GenerateSpherePoints(8);
 
             // Convert to symmetries (and rotate normals using major axes)
             foreach (var point in spherePoints)
             {
-                symmetries.Add(new ReflectionalSymmetry(PCA.Mean, point));
+                InitialSymmetries.Add(new ReflectionalSymmetry(PCA.Mean, point));
             }
-
-            return symmetries;
         }
 
         /// <summary>
@@ -262,7 +213,7 @@ namespace SymmetryDetection.SymmetryDectection
         /// </summary>
         /// <param name="numSegments">Total segments to split the sphere into</param>
         /// <returns>A list of points around the sphere</returns>
-        public List<Vector3> GenerateSpherePoints(int numSegments)
+        private List<Vector3> GenerateSpherePoints(int numSegments)
         {
             List<Vector3> spherePoints = new List<Vector3>();
             if (numSegments <= 1)
@@ -294,7 +245,7 @@ namespace SymmetryDetection.SymmetryDectection
             return spherePoints;
         }
 
-        public ISymmetry RefineSymmetryPosition(PointCloud cloud, ISymmetry originalSymmetry)
+        private ISymmetry RefineSymmetryPosition(PointCloud cloud, ISymmetry originalSymmetry)
         {
             ISymmetry refined = originalSymmetry;
             List<Correspondence> correspondences = new List<Correspondence>();
@@ -309,50 +260,44 @@ namespace SymmetryDetection.SymmetryDectection
                 var originalPoint = cloud.Points[i];
 
                 var srcPoint = originalPoint.Position;
-                // var srcNormal = originalPoint.Normal;
                 var neighbours = cloudProjected.GetNeighbours(projectedPoint, 5);
 
                 float minimumFitError = float.MaxValue;
                 float minimumReflectedDistance = float.MaxValue;
-                PointXYZRGBNormal bestFit = null;
+                PointXYZNormal bestFit = null;
 
                 foreach (var neighbour in neighbours)
                 {
                     var neighbourPoint = cloud.Points[neighbour.index];
                     var targetPos = neighbourPoint.Position;
-                    //var targetNormal = neighbourPoint.Normal;
 
                     //check distances between points and plane
                     var origDistance = PointHelpers.PointSignedDistance(srcPoint, originalSymmetry);
                     var neighbourDistance = PointHelpers.PointSignedDistance(targetPos, originalSymmetry);
-                    //if (PerformNormalValidation)
+
+                    // If the distance along the symmetry normal between the points of a symmetric correspondence is too small - reject
+                    if (MathF.Abs(origDistance - neighbourDistance) < Parameters.MIN_SYMMETRY_CORRESPONDENCE_DISTANCE)
                     {
-                        // If the distance along the symmetry normal between the points of a symmetric correspondence is too small - reject
-                        if (MathF.Abs(origDistance - neighbourDistance) < Parameters.MIN_SYMMETRY_CORRESPONDENCE_DISTANCE)
+                        continue;
+                    }
+
+                    //issue is we're getting false positives with a sym fit error of 0 which aren't correspondences as the plane lies halfway between the points
+                    //work around this by checking the distance between the original point and reflected target point
+                    var reflectedTargetPos = PointHelpers.ReflectPoint(targetPos, originalSymmetry);
+                    float reflectedDistance = originalPoint.GetDistance(reflectedTargetPos);
+
+                    float symFitError = MathF.Abs(ReflectionHelpers.GetReflectionSymmetryPositionFitError(srcPoint, targetPos, refined));
+                    if (reflectedDistance <= Parameters.MIN_SYMMETRY_CORRESPONDENCE_DISTANCE)
+                    {
+                        //the closest reflected point with the minimum symmetry error
+                        if (symFitError <= minimumFitError && reflectedDistance <= minimumReflectedDistance)
                         {
-                            continue;
-                        }
-
-                        //check the distance between the reflected points
-                        //reflect target check distance
-
-                        //issue is we're getting false positives with a sym fit error of 0 which aren't correspondences as the plane lies halfway between the points
-                        //work around this by checking the distance between the original point and reflected target point
-                        var reflectedTargetPos = PointHelpers.ReflectPoint(targetPos, originalSymmetry);
-                        float reflectedDistance = originalPoint.GetDistance(reflectedTargetPos);
-
-                        float symFitError = MathF.Abs(ReflectionHelpers.GetReflectionSymmetryPositionFitError(srcPoint, targetPos, refined));
-                        //if (reflectedDistance <= MIN_SYMMETRY_CORRESPONDENCE_DISTANCE)
-                        {
-                            //the closest reflected point with the minimum symmetry error
-                            if (symFitError <= minimumFitError && reflectedDistance <= minimumReflectedDistance)
-                            {
-                                minimumFitError = symFitError;
-                                minimumReflectedDistance = reflectedDistance;
-                                bestFit = neighbourPoint;
-                            }
+                            minimumFitError = symFitError;
+                            minimumReflectedDistance = reflectedDistance;
+                            bestFit = neighbourPoint;
                         }
                     }
+
                 }
                 if (bestFit != null)
                 {
@@ -381,15 +326,13 @@ namespace SymmetryDetection.SymmetryDectection
             return refined;
         }
 
-        public bool RefineGlobalSymmetryPosition(PointCloud cloud, ISymmetry symmetry)
+        private bool RefineGlobalSymmetryPosition(PointCloud cloud, ISymmetry symmetry)
         {
             bool success = true;
             ISymmetry refinedSymmetry = symmetry;
             ISymmetry previousSymmetry;
             List<Correspondence> correspondences;
             int numIterations = 0;
-
-            float MAX_SYMMETRY_NORMAL_FIT_ERROR = (45f).ConvertToRadians();
 
             CorrespondenceRejector rejector = new CorrespondenceRejector();
             ReflectionalSymmetryRefinementFunction functor = new ReflectionalSymmetryRefinementFunction(cloud);
@@ -411,7 +354,8 @@ namespace SymmetryDetection.SymmetryDectection
 
                     Vector3 srcPointReflected = PointHelpers.ReflectPoint(srcPoint, refinedSymmetry);
                     Vector3 srcNormalReflected = PointHelpers.ReflectNormal(srcNormal, refinedSymmetry);
-                    PointXYZRGBNormal searchPoint = new PointXYZRGBNormal()
+
+                    PointXYZNormal searchPoint = new PointXYZNormal()
                     {
                         Position = srcPointReflected,
                         Normal = srcNormalReflected
@@ -420,7 +364,6 @@ namespace SymmetryDetection.SymmetryDectection
                     var neighbours = cloud.GetClosetNeighbours(searchPoint, 1);
 
                     Vector3 targetPoint = neighbours[0].neighbour.Position;
-                    Vector3 targetNormal = neighbours[0].neighbour.Normal;
 
                     // NOTE: this is required for faster convergence. Distance along symmetry
                     // normal works faster than point to point distnace
@@ -459,24 +402,17 @@ namespace SymmetryDetection.SymmetryDectection
                     LevenbergMarquadtEJML lm = new LevenbergMarquadtEJML(functor, linearSolver);
                     var solution = lm.Minimise(input);
                     //parameters are the correspondences
+                    Vector3 origin = new Vector3((float)solution[0], (float)solution[1], (float)solution[2]);
+                    Vector3 normal = new Vector3((float)solution[3], (float)solution[4], (float)solution[5]);
 
-                    Vector6 solutionVector = new Vector6()
-                    {
-                        X = (float)solution[0],
-                        Y = (float)solution[1],
-                        Z = (float)solution[2],
-                        A = (float)solution[3],
-                        B = (float)solution[4],
-                        C = (float)solution[5],
-                    };
-                    refinedSymmetry = new ReflectionalSymmetry(solutionVector.Head, solutionVector.Tail);
-                    refinedSymmetry.SetOriginProjected(cloud.Mean); // seems to be overwriting the above line by setting origin to the 
+                    refinedSymmetry = new ReflectionalSymmetry(origin, normal);
+                    refinedSymmetry.SetOriginProjected(PCA.Mean); // seems to be overwriting the above line by setting origin to the 
 
                     if (++numIterations >= Parameters.MAX_ITERATIONS)
                     {
                         done = true;
                     }
-                    PointHelpers.ReflectedSymmetryDifference(previousSymmetry, cloud.Mean, refinedSymmetry, out float angleDiff, out float distanceDiff);
+                    PointHelpers.ReflectedSymmetryDifference(previousSymmetry, PCA.Mean, refinedSymmetry, out float angleDiff, out float distanceDiff);
 
                     if (angleDiff < (0.05f).ConvertToRadians() && distanceDiff < 0.0001f)
                     {
@@ -490,20 +426,6 @@ namespace SymmetryDetection.SymmetryDectection
                 }
             }
             return success;
-        }
-
-        public float CalculateGlobalScore()
-        {
-            float inlierScoreSum = 0;
-            foreach (int symmetryPlane in SymmetryMergedIds)
-            {
-                var symmetry = SymmetriesRefined[symmetryPlane];
-                this.ReflectionalScoreService.CalculateSymmetryPointSymmetryScores(Cloud, symmetry, true, Parameters, out List<float> pointScores, out List<Correspondence> correspondences);
-                var pointScoreError = pointScores.Select(s => 1 - s).Sum();
-                inlierScoreSum += pointScoreError / Cloud.Points.Count;
-            }
-            //average error for all points across all detected symmetries;
-            return inlierScoreSum / (SymmetryMergedIds.Count > 0 ? SymmetryMergedIds.Count : 1);
         }
     }
 }

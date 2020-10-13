@@ -32,7 +32,7 @@ namespace SymmetryDetection.FileTypes
             PointCloud cloud = new PointCloud();
             foreach (var vert in Items)
             {
-                cloud.Points.Add(new PointXYZRGBNormal()
+                cloud.Points.Add(new PointXYZNormal()
                 {
                     Position = new Vector3(vert.X, vert.Y, vert.Z)
                 });

@@ -7,11 +7,11 @@ namespace SymmetryDetection.SymmetryDectection
 {
     public class Correspondence
     {
-        public PointXYZRGBNormal Original { get; set; }
-        public PointXYZRGBNormal CorrespondingPoint { get; set; }
+        public PointXYZNormal Original { get; set; }
+        public PointXYZNormal CorrespondingPoint { get; set; }
         public float Distance { get; set; }
 
-        public Correspondence(PointXYZRGBNormal original, PointXYZRGBNormal neighbour, float distance)
+        public Correspondence(PointXYZNormal original, PointXYZNormal neighbour, float distance)
         {
             this.Original = original;
             this.CorrespondingPoint = neighbour;

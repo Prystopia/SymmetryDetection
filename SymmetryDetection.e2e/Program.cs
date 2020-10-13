@@ -43,7 +43,7 @@ namespace SymmetryDetection.e2e
             SymmetryDetectionHandler drs = new SymmetryDetectionHandler(testFile, handlers);
             drs.DetectSymmetries();
 
-            if (drs.Symmetries.Count != 9)
+            if (drs.Symmetries.Count(s=>s.SymmetryType == Enums.SymmetryTypeEnum.Reflectional) != 9)
             {
                 throw new Exception("Incorrect number of symmetry planes detected");
             }

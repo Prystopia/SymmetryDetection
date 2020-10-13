@@ -7,15 +7,13 @@ using System.Text;
 
 namespace SymmetryDetection.SymmetryDectection
 {
-    public class PCA /*: IPrincipalComponentsAnalysis*/
+    public class PCA
     {
         public PointCloud Cloud { get; set; }
         public PointCloud DemeanedCloud { get; set; }
         private bool FakeIndices { get; set; }
         private List<int> Indices { get; set; }
         public Vector3 Mean { get; set; }
-        //public float[,] EigenVectors { get; set; }
-        //public float[] EigenValues { get; set; }
 
         public PCA(PointCloud pc)
         {
@@ -33,7 +31,6 @@ namespace SymmetryDetection.SymmetryDectection
         {
             this.Calculate3DCentroid();
             this.DemeanCloud();
-            //this.CalculateEigenVectors();
         }
 
         public void Calculate3DCentroid()
@@ -59,25 +56,12 @@ namespace SymmetryDetection.SymmetryDectection
             DemeanedCloud.IsDense = Cloud.IsDense;
             foreach(var point in Cloud.Points)
             {
-                var demeanedPoint = new PointXYZRGBNormal();
-                demeanedPoint.Colour = point.Colour;
-                demeanedPoint.Curvature = point.Curvature;
+                var demeanedPoint = new PointXYZNormal();
                 demeanedPoint.Normal = point.Normal;
                 demeanedPoint.Position = new Vector3(point.Position.X - Mean.X, point.Position.Y - Mean.Y, point.Position.Z - Mean.Z);
                 DemeanedCloud.AddPoint(demeanedPoint);
             }
         }
-
-        //private void CalculateEigenVectors()
-        //{
-        //    float coeff = 1f / ((float)Indices.Count - 1f);
-        //    //matrix is 3 rows - x, y & z + each col represents a point
-        //    var array = DemeanedCloud.ConvertToArray().TopRows(3).Multiply(coeff);
-        //    var nxtArray = array.Multiply(DemeanedCloud.ConvertToArray().TopRows(3).Transpose());
-        //    EigenvalueDecompositionF eigenvalue = new EigenvalueDecompositionF(nxtArray);
-        //    this.EigenVectors = eigenvalue.Eigenvectors;
-        //    this.EigenValues = eigenvalue.RealEigenvalues;
-        //}
 
         private float[,] GetArray()
         {

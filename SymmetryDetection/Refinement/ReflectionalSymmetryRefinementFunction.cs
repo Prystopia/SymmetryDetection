@@ -25,18 +25,13 @@ namespace SymmetryDetection.Refinement
         public double[] Function(double[] input)
         {
             double[] errors = new double[Correspondences.Count];
-            Vector6 pos = new Vector6()
-            {
-                X = (float)input[0],
-                Y = (float)input[1],
-                Z = (float)input[2],
-                A = (float)input[3],
-                B = (float)input[4],
-                C = (float)input[5]
-            };
+
+            Vector3 origin = new Vector3((float)input[0], (float)input[1], (float)input[2]);
+            Vector3 normal = new Vector3((float)input[3], (float)input[4], (float)input[5]);
+
             //this is our initial guess ^^
 
-            ReflectionalSymmetry sym = new ReflectionalSymmetry(pos.Head, pos.Tail);
+            ReflectionalSymmetry sym = new ReflectionalSymmetry(origin, normal);
 
             for (int i = 0; i < Correspondences.Count; i++)
             {
@@ -55,37 +50,5 @@ namespace SymmetryDetection.Refinement
             return errors;
             
         }
-
-        //public int df(float[] input, float[,] jac)
-        //{
-        //    float h;
-        //    int nfev = 0;
-        //    int n = InputSize;
-        //    float eps = MathF.Sqrt(MathF.Max(0, ExtensionMethods.EPSILON));
-        //    float[] val1, val2;
-        //    float[] x = input;
-        //    // TODO : we should do this only if the size is not already known
-        //    val1 = new float[ValuesSize];
-        //    val2 = new float[ValuesSize];
-
-        //    Function(x, val1);
-
-        //    // Function Body
-        //    for (int j = 0; j < n; ++j)
-        //    {
-        //        h = eps * MathF.Abs(x[j]);
-        //        if (h == 0)
-        //        {
-        //            h = eps;
-        //        }
-        //        x[j] += h;
-        //        Function(x, val2);
-        //        nfev++;
-        //        x[j] = input[j];
-        //        jac.SetColumn(j, val2.Minus(val1).Divide(h));
-        //    }
-        //    return nfev;
-        //}
     }
-
 }

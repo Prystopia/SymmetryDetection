@@ -22,7 +22,7 @@ namespace SymmetryDetection.e2e
 
             foreach (var point in this.Points)
             {
-                cloud.AddPoint(new PointXYZRGBNormal() { Position = point });
+                cloud.AddPoint(new PointXYZNormal() { Position = point });
             }
             return cloud;
         }

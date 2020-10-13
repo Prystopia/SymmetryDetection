@@ -1,4 +1,5 @@
-﻿using SymmetryDetection.Interfaces;
+﻿using SymmetryDetection.Enums;
+using SymmetryDetection.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -10,6 +11,8 @@ namespace SymmetryDetection.SymmetryDectection
     {
         public Vector3 Origin { get; set; }
         public Vector3 Normal { get; set; }
+        public float SymmetryScore { get; set; }
+        public SymmetryTypeEnum SymmetryType { get; set; }
 
         public RotationalSymmetry(Vector3 origin, Vector3 rotation)
         {

@@ -61,11 +61,9 @@ namespace SymmetryDetection.FileTypes.PLY
             PointCloud cloud = new PointCloud();
             foreach (var vert in Vertices)
             {
-                cloud.Points.Add(new PointXYZRGBNormal()
+                cloud.Points.Add(new PointXYZNormal()
                 {
-                    Colour = vert.Colour,
                     Position = vert.Position,
-                    Curvature = vert.Curvature,
                     Normal = vert.Normal
                 });
             }

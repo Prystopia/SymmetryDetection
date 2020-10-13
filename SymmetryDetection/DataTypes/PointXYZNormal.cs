@@ -7,15 +7,13 @@ using System.Text;
 
 namespace SymmetryDetection.DataTypes
 {
-    public class PointXYZRGBNormal : ICloneable<PointXYZRGBNormal>
+    public class PointXYZNormal : ICloneable<PointXYZNormal>
     {
         public Guid Id { get; set; }
         public Vector3 Position { get; set; }
         public Vector3 Normal { get; set; }
-        public Color Colour { get; set; }
-        public float Curvature { get; set; }
 
-        public PointXYZRGBNormal()
+        public PointXYZNormal()
         {
             Id = Guid.NewGuid();
         }
@@ -27,13 +25,11 @@ namespace SymmetryDetection.DataTypes
             var zDist = MathF.Pow(Position.Z - point.Z, 2);
             return xDist + yDist + zDist;
         }
-        public PointXYZRGBNormal Clone()
+        public PointXYZNormal Clone()
         {
-            PointXYZRGBNormal newPoint = new PointXYZRGBNormal();
-            newPoint.Colour = Color.FromArgb(this.Colour.ToArgb());
+            PointXYZNormal newPoint = new PointXYZNormal();
             newPoint.Position = new Vector3(Position.X, Position.Y, Position.Z);
             newPoint.Normal = new Vector3(Normal.X, Normal.Y, Normal.Z);
-            newPoint.Curvature = Curvature;
             newPoint.Id = Id;
             return newPoint;
         }

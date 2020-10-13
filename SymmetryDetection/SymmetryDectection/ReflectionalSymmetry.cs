@@ -1,4 +1,5 @@
-﻿using SymmetryDetection.Extensions;
+﻿using SymmetryDetection.Enums;
+using SymmetryDetection.Extensions;
 using SymmetryDetection.Helpers;
 using SymmetryDetection.Interfaces;
 using System;
@@ -12,6 +13,10 @@ namespace SymmetryDetection.SymmetryDectection
     {
         public Vector3 Origin { get; set; }
         public Vector3 Normal { get; set; }
+        public float SymmetryScore { get; set; }
+        public float CorrespondenceInlierScore { get; set; }
+        public SymmetryTypeEnum SymmetryType { get; set; }
+
         public ReflectionalSymmetry(Vector3 origin, Vector3 normal)
         {
             this.Origin = origin;
