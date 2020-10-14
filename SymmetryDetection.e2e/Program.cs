@@ -168,12 +168,6 @@ namespace SymmetryDetection.e2e
 
         static void Main(string[] args)
         {
-            //PLYFile file = new PLYFile();
-            //file.LoadFromFile($@"/Users/eddie/untitled.ply");
-
-            //InstallationDefinitionFile file = JsonConvert.DeserializeObject<InstallationDefinitionFile>(File.ReadAllText(@"G:\Git\SculptureGallery\SculptureGallery\SculptureGallery\SculptureGallery\json\axial2.json"));
-
-            //Create a test file with a unit cube, with an origin of (0,0,0)
             TestUnitCube();
             TestUnitSphere();
             
