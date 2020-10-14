@@ -4,6 +4,7 @@ using SymmetryDetection.Extensions;
 using SymmetryDetection.FileTypes;
 using SymmetryDetection.FileTypes.PLY;
 using SymmetryDetection.Interfaces;
+using SymmetryDetection.Parameters;
 using SymmetryDetection.ScoreServices;
 using SymmetryDetection.SymmetryDectection;
 using System;
@@ -166,17 +167,46 @@ namespace SymmetryDetection.e2e
             Console.Write(export);
         }
 
+        private static void AddSymmetryLevelsToSculptures()
+        {
+            int totalSculptures = 149, startSculpture = 1;
+
+            for (int i = startSculpture; i < totalSculptures + startSculpture; i++)
+            {
+                Console.WriteLine($"Detecting symmetries for sculpture: {i}");
+
+                string fileLoc = @$"G:\Git\SculptureGallery\SculptureGallery\SculptureGallery\SculptureGallery\json\axial{i}-reduced.json";
+                InstallationDefinitionFile file = JsonConvert.DeserializeObject<InstallationDefinitionFile>(File.ReadAllText(fileLoc));
+
+                ReflectionalSymmetryParameters parameters = new ReflectionalSymmetryParameters();
+                parameters.MAX_REFERENCE_POINT_DISTANCE = 5;
+                parameters.MIN_CLOUD_INLIER_SCORE = 0.15f;
+
+
+                List<ISymmetryDetector> handlers = new List<ISymmetryDetector>()
+                {
+                    new ReflectionalSymmetryDetector(new ReflectionalSymmetryScoreService(), parameters),
+                    //new RotationalSymmetryDectector()
+                };
+                ISymmetryExporter exporter = new TextExporter();
+                SymmetryDetectionHandler drs = new SymmetryDetectionHandler(file, handlers);
+                drs.DetectSymmetries();
+                var globalScore = drs.CalculateGlobalSymmetryScore();
+                
+                file.SymmetryLevel = globalScore;
+                File.WriteAllText(fileLoc, JsonConvert.SerializeObject(file, Formatting.Indented));
+                string export = exporter.ExportSymmetries(drs.Symmetries, globalScore);
+
+                Console.Write(export);
+                Console.WriteLine();
+            }
+        }
+
         static void Main(string[] args)
         {
-            //PLYFile file = new PLYFile();
-            //file.LoadFromFile($@"/Users/eddie/untitled.ply");
-
-            //InstallationDefinitionFile file = JsonConvert.DeserializeObject<InstallationDefinitionFile>(File.ReadAllText(@"G:\Git\SculptureGallery\SculptureGallery\SculptureGallery\SculptureGallery\json\axial2.json"));
-
-            //Create a test file with a unit cube, with an origin of (0,0,0)
-            TestUnitCube();
-            TestUnitSphere();
-            
+            //TestUnitCube();
+            //TestUnitSphere();
+            AddSymmetryLevelsToSculptures();
         }
 
         private static bool CheckCollectionContainsVector(List<ISymmetry> symmetries, Vector3 vector)
