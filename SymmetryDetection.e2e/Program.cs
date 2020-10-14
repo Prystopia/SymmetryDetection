@@ -175,7 +175,7 @@ namespace SymmetryDetection.e2e
             {
                 Console.WriteLine($"Detecting symmetries for sculpture: {i}");
 
-                string fileLoc = @$"G:\Git\SculptureGallery\SculptureGallery\SculptureGallery\SculptureGallery\json\axial{i}-reduced.json";
+                string fileLoc = @$"G:\Git\SculptureGallery\SculptureGallery\SculptureGallery\SculptureGallery.Sculptures\Json\axial{i}-reduced.json";
                 InstallationDefinitionFile file = JsonConvert.DeserializeObject<InstallationDefinitionFile>(File.ReadAllText(fileLoc));
 
                 ReflectionalSymmetryParameters parameters = new ReflectionalSymmetryParameters();
@@ -204,8 +204,8 @@ namespace SymmetryDetection.e2e
 
         static void Main(string[] args)
         {
-            //TestUnitCube();
-            //TestUnitSphere();
+            TestUnitCube();
+            TestUnitSphere();
             AddSymmetryLevelsToSculptures();
         }
 
