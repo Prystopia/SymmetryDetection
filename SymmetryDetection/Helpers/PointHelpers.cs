@@ -29,7 +29,7 @@ namespace SymmetryDetection.Helpers
 
         public static void ReflectedSymmetryDifference(ISymmetry other, Vector3 referencePoint, ISymmetry symmetry, out float angle, out float distance)
         {
-            angle = MathF.Acos(LineLineAngleCos(symmetry.Normal, other.Normal));
+            angle = (float)Math.Acos(LineLineAngleCos(symmetry.Normal, other.Normal));
             Vector3 refProjectPoint1 = ProjectPoint(referencePoint, symmetry);
             Vector3 refProjectPoint2 = ProjectPoint(referencePoint, other);
             distance = MathsHelpers.PointToPointDistance(refProjectPoint1, refProjectPoint2);
@@ -37,7 +37,7 @@ namespace SymmetryDetection.Helpers
 
         private static float LineLineAngleCos(Vector3 direction1, Vector3 direction2)
         {
-            return MathF.Abs(VectorVectorAngleCos(direction1, direction2));
+            return Math.Abs(VectorVectorAngleCos(direction1, direction2));
         }
         private static float VectorVectorAngleCos(Vector3 direction1, Vector3 direction2)
         {

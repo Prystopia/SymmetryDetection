@@ -59,6 +59,7 @@ namespace SymmetryDetection.SymmetryDectection
                 var demeanedPoint = new PointXYZNormal();
                 demeanedPoint.Normal = point.Normal;
                 demeanedPoint.Position = new Vector3(point.Position.X - Mean.X, point.Position.Y - Mean.Y, point.Position.Z - Mean.Z);
+                demeanedPoint.Colour = point.Colour;
                 DemeanedCloud.AddPoint(demeanedPoint);
             }
         }

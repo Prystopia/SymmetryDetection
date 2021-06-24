@@ -11,7 +11,7 @@ using System.Text;
 
 namespace SymmetryDetection.ScoreServices
 {
-    public class ReflectionalSymmetryScoreService : IScoreService<ReflectionalSymmetryParameters>
+    public class DistanceErrorScoreService : IScoreService<ReflectionalSymmetryParameters>
     {
         public void CalculateSymmetryPointSymmetryScores(PointCloud cloud, ISymmetry symmetry, bool ignoreDistance, ReflectionalSymmetryParameters parameters,  out List<float> pointSymmetryScores, out List<Correspondence> correspondences)
         {
@@ -48,8 +48,8 @@ namespace SymmetryDetection.ScoreServices
 
                     // NOTE: this is to avoid the problem with correspondences between thin walls.
                     // Correspondences between thin walls are likely to have normals that are 180 degrees appart.
-                    if (symmetryScore > MathF.PI * 3 / 4)
-                        symmetryScore = MathF.PI - symmetryScore;
+                    if (symmetryScore > Math.PI * 3 / 4)
+                        symmetryScore = (float)Math.PI - symmetryScore;
 
                     symmetryScore = (symmetryScore - minInlierNormalAngle) / (maxInlierNormalAngle - minInlierNormalAngle);
                     symmetryScore = symmetryScore.ClampValue(0f, 1f);

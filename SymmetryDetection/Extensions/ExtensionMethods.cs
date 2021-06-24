@@ -12,8 +12,8 @@ namespace SymmetryDetection.Extensions
 
         public static float[] GetColumn(this float[,] matrix, int column)
         {
-            float[] val = new float[matrix.GetLongLength(column)];
-            for (int i = 0; i < matrix.GetLongLength(column); i++)
+            float[] val = new float[matrix.GetLength(1)];
+            for (int i = 0; i < matrix.GetLength(1); i++)
             {
                 val[i] = matrix[i, column];
             }
@@ -53,7 +53,7 @@ namespace SymmetryDetection.Extensions
 
         public static float ConvertToRadians(this float angle)
         {
-            return (MathF.PI / 180) * angle;
+            return (float)(Math.PI / 180) * angle;
         }
 
         public static double[] GetRow(this double[,] original, int row)
@@ -80,7 +80,7 @@ namespace SymmetryDetection.Extensions
 
         public static float Abs2(this float value)
         {
-            return MathF.Abs(MathF.Pow(value, 2));
+            return (float)Math.Abs(Math.Pow(value, 2));
         }
 
         public static float[] Multiply(this float[] original, float factor)
@@ -208,7 +208,7 @@ namespace SymmetryDetection.Extensions
             float[] absoluteArray = new float[norm.Length];
             for (int i = 0; i < norm.Length; i++)
             {
-                absoluteArray[i] = MathF.Abs(norm[i]);
+                absoluteArray[i] = Math.Abs(norm[i]);
             }
             return absoluteArray;
         }
@@ -309,7 +309,7 @@ namespace SymmetryDetection.Extensions
 
         public static void SetColumn(this float[,] matrix, int column, float[] newValue)
         {
-            for (int i = 0; i < matrix.GetLongLength(column); i++)
+            for (int i = 0; i < matrix.GetLength(1); i++)
             {
                 matrix[i, column] = newValue[i];
             }
@@ -379,7 +379,7 @@ namespace SymmetryDetection.Extensions
 
             if (index == 1)
             {
-                norm = MathF.Abs(array[0]);
+                norm = Math.Abs(array[0]);
             }
             else
             {
@@ -390,7 +390,7 @@ namespace SymmetryDetection.Extensions
                 float maxCoefficient = array.AbsoluteValue().MaxCoefficient(out _);
                 if (maxCoefficient > scale)
                 {
-                    ssq = ssq * MathF.Abs(scale / maxCoefficient);
+                    ssq = ssq * Math.Abs(scale / maxCoefficient);
                     float temp = 1f / maxCoefficient;
                     if (temp > float.MaxValue)
                     {
@@ -418,7 +418,7 @@ namespace SymmetryDetection.Extensions
                     ssq += array.Multiply(inverseScale).SquaredNorm();
                 }
 
-                norm = scale = MathF.Sqrt(ssq);
+                norm = scale = (float)Math.Sqrt(ssq);
             }
             return norm;
         }
@@ -753,7 +753,7 @@ namespace SymmetryDetection.Extensions
                 sum += Abs2(array[i]);
             }
 
-            return MathF.Sqrt(sum);
+            return (float)Math.Sqrt(sum);
         }
 
         public static float[,] Multiply(this float[,] original, float[,] other)
@@ -821,103 +821,6 @@ namespace SymmetryDetection.Extensions
                 newArray[i] = 0;
             }
             return newArray;
-        }
-
-        public static float BlueNorm(this float[] array)
-        {
-            // This program calculates the machine-dependent constants
-            // bl, b2, slm, s2m, relerr overfl
-            // from the "basic" machine-dependent numbers
-            //nbig, ibeta, it, iemin, iemax, rbig.
-            // The following define the basic machine-dependent constants.
-            // For portability, the PORT subprograms "ilmaeh" and "rlmach"
-            // are used. For any specific computer, each of the assignment
-            // statements can be replaced
-
-            int ibeta = 2;// (radix) base for floating-point numbers
-            int it = 24;  // number of base-beta digits in mantissa
-            int iemin = -125; // minimum float exponent
-            int iemax = 128; // maximum float exponent
-            float rbig = float.MaxValue; // largest floating-point number
-            float b1 = MathF.Pow(ibeta, -((1 - iemin) / 2));  // lower boundary of midrange
-            float b2 = MathF.Pow(ibeta, (iemax + 1 - it) / 2);  // upper boundary of midrange
-            float s1m = MathF.Pow(ibeta, (2 - iemin) / 2);  // scaling factor for lower range
-            float s2m = MathF.Pow(ibeta, -((iemax + it) / 2));  // scaling factor for upper range
-            float eps = MathF.Pow(ibeta, 1 - it);
-            float relerr = MathF.Sqrt(eps);  // tolerance for neglecting asml
-
-            int n = array.Length;
-            float ab2 = b2 / n;
-            float asml = 0;
-            float amed = 0;
-            float abig = 0;
-
-            for (int j = 0; j < array.Length; j++)
-            {
-                float val = array[j];
-
-                //this is the definition of abs2
-                float ax = MathF.Abs(val);
-                if (ax > ab2)
-                {
-                    abig += MathF.Abs(MathF.Pow(ax * s2m, 2));
-                }
-                else if (ax < b1)
-                {
-                    asml += MathF.Abs(MathF.Pow(ax * s1m, 2));
-                }
-                else
-                {
-                    amed += MathF.Abs(MathF.Pow(ax, 2));
-                }
-            }
-            if (float.IsNaN(amed))
-            {
-                return amed;
-            }
-
-            if (abig > 0)
-            {
-                abig = MathF.Sqrt(abig);
-                if (abig > rbig)
-                {
-                    return abig;
-                }
-
-                if (amed > 0)
-                {
-                    abig = abig / s2m;
-                    amed = MathF.Sqrt(amed);
-                }
-                else
-                {
-                    return abig / s2m;
-                }
-            }
-            else if (asml > 0)
-            {
-                if (amed > 0)
-                {
-                    abig = MathF.Sqrt(amed);
-                    amed = MathF.Sqrt(asml) / s1m;
-                }
-                else
-                {
-                    return MathF.Sqrt(asml) / s1m;
-                }
-            }
-            else
-            {
-                return MathF.Sqrt(amed);
-            }
-
-            asml = MathF.Min(abig, amed);
-            abig = MathF.Max(abig, amed);
-
-            if (asml <= abig * relerr)
-                return abig;
-            else
-                return abig * MathF.Sqrt(1 + MathF.Abs(MathF.Pow(asml / abig, 2)));
         }
 
         public static float Norm(this float[] original)
@@ -1012,7 +915,7 @@ namespace SymmetryDetection.Extensions
             float[] returnVal = new float[val.Length];
             for (int i = 0; i < val.Length; i++)
             {
-                returnVal[i] = MathF.Max(val[i], val2[i]);
+                returnVal[i] = Math.Max(val[i], val2[i]);
             }
 
             return returnVal;

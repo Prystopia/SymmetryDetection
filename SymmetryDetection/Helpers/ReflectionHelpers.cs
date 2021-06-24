@@ -20,6 +20,7 @@ namespace SymmetryDetection.Helpers
         {
             //get distance of midpoint between two points to the plane
             Vector3 midpoint = (point1 + point2) / 2;
+            //get distance from midpoint to the plane of symmetry
             return PointHelpers.PointSignedDistance(midpoint, symmetry);
         }
     }
