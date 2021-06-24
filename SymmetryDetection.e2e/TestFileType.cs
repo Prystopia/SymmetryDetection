@@ -9,9 +9,9 @@ namespace SymmetryDetection.e2e
 {
     public class TestFileType : IFileType
     {
-        private List<Vector3> Points { get; set; }
+        private List<(Vector3, Vector3)> Points { get; set; }
         public float SymmetryScore { get; set; }
-        public TestFileType(List<Vector3> points)
+        public TestFileType(List<(Vector3, Vector3)> points)
         {
             this.Points = points;
         }
@@ -22,7 +22,7 @@ namespace SymmetryDetection.e2e
 
             foreach (var point in this.Points)
             {
-                cloud.AddPoint(new PointXYZNormal() { Position = point, Colour = new Vector3(255, 110, 52) });
+                cloud.AddPoint(new PointXYZNormal() { Position = point.Item1, Colour = point.Item2 });
             }
             return cloud;
         }

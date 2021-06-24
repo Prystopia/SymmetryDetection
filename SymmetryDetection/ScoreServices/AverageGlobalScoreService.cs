@@ -21,18 +21,5 @@ namespace SymmetryDetection.ScoreServices
 
             return scoreSum;
         }
-
-        public float CalculateGlobalScore(ISymmetryDetector handler)
-        {
-            float scoreSum = 0;
-
-            foreach (var symmetry in handler.MergedSymmetries)
-            {
-                scoreSum += symmetry.SymmetryScore;
-            }
-            scoreSum /= (handler.MergedSymmetries.Count > 0 ? handler.MergedSymmetries.Count : 1);
-
-            return scoreSum;
-        }
     }
 }

@@ -54,6 +54,11 @@ namespace SymmetryDetection.Parameters
         /// </summary>
         public float MAX_COLOUR_INTENSITY_DIFF { get; set; }
 
+        /// <summary>
+        /// Minimum allows colour symmetry score for a plane of symmetry
+        /// </summary>
+        public float MIN_COLOUR_SYMMETRY_SCORE { get; set; }
+
         public ReflectionalSymmetryParameters()
         {
             this.MAX_OCCLUSION_SCORE = 0.01f;
@@ -65,6 +70,8 @@ namespace SymmetryDetection.Parameters
             this.MAX_ITERATIONS = 20;
             this.MAX_NORMAL_ANGLE_DIFF = 0.12221f;
             this.MAX_DISTANCE_DIFF = 0.01f;
+            this.MAX_COLOUR_INTENSITY_DIFF = 255;
+            this.MIN_COLOUR_SYMMETRY_SCORE = 0;
         }
     }
 }

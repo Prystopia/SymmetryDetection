@@ -8,6 +8,5 @@ namespace SymmetryDetection.Interfaces
     public interface IGlobalScoreService
     {
         float CalculateGlobalScore(SymmetryDetectionHandler handler);
-        float CalculateGlobalScore(ISymmetryDetector handler);
     }
 }

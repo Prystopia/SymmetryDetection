@@ -19,7 +19,7 @@ namespace SymmetryDetection.Helpers
 
         public static Vector3 ReflectPoint(Vector3 point, ISymmetry plane)
         {
-            return (point - 2 * plane.Normal * (Vector3.Dot(plane.Normal, point - plane.Origin)));
+            return (point - (2 * (plane.Normal * (Vector3.Dot(plane.Normal, point - plane.Origin)))));
         }
         public static float PointSignedDistance(Vector3 point, ISymmetry plane)
         {

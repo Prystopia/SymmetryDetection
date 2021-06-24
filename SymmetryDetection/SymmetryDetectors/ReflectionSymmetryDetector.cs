@@ -269,9 +269,6 @@ namespace SymmetryDetection.SymmetryDectection
                 var srcPoint = originalPoint.Position;
                 var neighbours = cloudProjected.GetNeighbours(projectedPoint, 5);
 
-                var srcColour = originalPoint.Colour;
-                var srcIntensity = (srcColour.X + srcColour.Y + srcColour.Z)/3f;
-
                 float minimumFitError = float.MaxValue;
                 float minimumReflectedDistance = float.MaxValue;
                 PointXYZNormal bestFit = null;
@@ -280,21 +277,13 @@ namespace SymmetryDetection.SymmetryDectection
                 {
                     var neighbourPoint = cloud.Points[neighbour.index];
                     var targetPos = neighbourPoint.Position;
-                    var targetColour = neighbourPoint.Colour;
-                    var targetIntensity = (targetColour.X + targetColour.Y + targetColour.Z) / 3f;
-
+                    
                     //check distances between points and plane
                     var origDistance = PointHelpers.PointSignedDistance(srcPoint, originalSymmetry);
                     var neighbourDistance = PointHelpers.PointSignedDistance(targetPos, originalSymmetry);
 
                     // If the distance along the symmetry normal between the points of a symmetric correspondence is too small - reject
                     if (Math.Abs(origDistance - neighbourDistance) < Parameters.MIN_SYMMETRY_CORRESPONDENCE_DISTANCE)
-                    {
-                        continue;
-                    }
-
-                    //check that the intensity of the items is smaller than the specified threshold
-                    if(Math.Abs(srcIntensity - targetIntensity) > Parameters.MAX_COLOUR_INTENSITY_DIFF)
                     {
                         continue;
                     }
@@ -373,15 +362,22 @@ namespace SymmetryDetection.SymmetryDectection
                     Vector3 srcPointReflected = PointHelpers.ReflectPoint(srcPoint, refinedSymmetry);
                     Vector3 srcNormalReflected = PointHelpers.ReflectNormal(srcNormal, refinedSymmetry);
 
+                    var srcColour = point.Colour;
+                    var srcIntensity = (srcColour.X + srcColour.Y + srcColour.Z) / 3f;
+
                     PointXYZNormal searchPoint = new PointXYZNormal()
                     {
                         Position = srcPointReflected,
-                        Normal = srcNormalReflected
+                        Normal = srcNormalReflected,
+                        Id = point.Id,
+                        Colour = point.Colour
                     };
 
                     var neighbours = cloud.GetClosetNeighbours(searchPoint, 1);
 
                     Vector3 targetPoint = neighbours[0].neighbour.Position;
+                    Vector3 targetColour = neighbours[0].neighbour.Colour;
+                    var targetIntensity = (targetColour.X + targetColour.Y + targetColour.Z) / 3f;
 
                     // NOTE: this is required for faster convergence. Distance along symmetry
                     // normal works faster than point to point distnace
@@ -391,11 +387,18 @@ namespace SymmetryDetection.SymmetryDectection
                         // If the distance between the reflected source point and it's nearest neighbor is too big - reject
                         if (neighbours[0].distance <= Parameters.MAX_SYMMETRY_CORRESPONDENCE_REFLECTED_DISTANCE)
                         {
-                            // Reject correspondence if normal error is too high - not so fussed about the normal error
-                            //float error = GetReflectionSymmetryNormalFitError(srcNormal, targetNormal, refinedSymmetry);
-                            //if(error <= MAX_SYMMETRY_NORMAL_FIT_ERROR)
+                            
+                            //check that the intensity of the items is smaller than the specified threshold
+                            //if not then reject the correspondence, if there are no correspondences this should reject the symmetry plane
+                            if (Math.Abs(srcIntensity - targetIntensity) <= Parameters.MAX_COLOUR_INTENSITY_DIFF)
                             {
-                                correspondences.Add(new Correspondence(point, neighbours[0].neighbour, neighbours[0].distance));
+
+                                // Reject correspondence if normal error is too high - not so fussed about the normal error
+                                //float error = GetReflectionSymmetryNormalFitError(srcNormal, targetNormal, refinedSymmetry);
+                                //if(error <= MAX_SYMMETRY_NORMAL_FIT_ERROR)
+                                {
+                                    correspondences.Add(new Correspondence(point, neighbours[0].neighbour, neighbours[0].distance));
+                                }
                             }
                         }
                     }

@@ -27,25 +27,5 @@ namespace SymmetryDetection.ScoreServices
 
             return bestScore;
         }
-
-        public float CalculateGlobalScore(ISymmetryDetector handler)
-        {
-            float bestScore = float.MinValue;
-
-            foreach (var symmetry in handler.MergedSymmetries)
-            {
-                if (symmetry.SymmetryScore > bestScore)
-                {
-                    bestScore = symmetry.SymmetryScore;
-                }
-            }
-
-            if (bestScore == float.MinValue)
-            {
-                bestScore = 0;
-            }
-
-            return bestScore;
-        }
     }
 }

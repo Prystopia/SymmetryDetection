@@ -26,16 +26,16 @@ namespace SymmetryDetection.e2e
         {
             Console.WriteLine("Detecting symmetries for unit cube");
 
-            TestFileType testFile = new TestFileType(new List<Vector3>()
+            TestFileType testFile = new TestFileType(new List<(Vector3, Vector3)>()
             {
-                new Vector3(-0.5f, -0.5f, -0.5f),
-                new Vector3(-0.5f, -0.5f , 0.5f),
-                new Vector3(-0.5f, 0.5f, 0.5f),
-                new Vector3(-0.5f, 0.5f, -0.5f),
-                new Vector3(0.5f, -0.5f, -0.5f),
-                new Vector3(0.5f, -0.5f, 0.5f),
-                new Vector3(0.5f, 0.5f, 0.5f),
-                new Vector3(0.5f, 0.5f, -0.5f),
+                (new Vector3(-0.5f, -0.5f, -0.5f), new Vector3(0, 0, 0)),
+                (new Vector3(-0.5f, -0.5f , 0.5f), new Vector3(5, 5, 5)),
+                (new Vector3(-0.5f, 0.5f, 0.5f), new Vector3(10, 10, 10)),
+                (new Vector3(-0.5f, 0.5f, -0.5f), new Vector3(15, 15, 15)),
+                (new Vector3(0.5f, -0.5f, -0.5f), new Vector3(20, 20, 20)),
+                (new Vector3(0.5f, -0.5f, 0.5f), new Vector3(25, 25, 25)),
+                (new Vector3(0.5f, 0.5f, 0.5f), new Vector3(30, 30, 30)),
+                (new Vector3(0.5f, 0.5f, -0.5f), new Vector3(35, 35, 35)),
             });
 
             //expected symmetry score
@@ -120,17 +120,179 @@ namespace SymmetryDetection.e2e
             Console.Write(export);
         }
 
+        private static void TestColourUnitCubeScore()
+        {
+            Console.WriteLine("Detecting symmetries for unit cube");
+
+            TestFileType testFile = new TestFileType(new List<(Vector3, Vector3)>()
+            {
+                (new Vector3(-0.5f, -0.5f, -0.5f), new Vector3(0, 0, 0)),
+                (new Vector3(-0.5f, -0.5f , 0.5f), new Vector3(5, 5, 5)),
+                (new Vector3(-0.5f, 0.5f, 0.5f), new Vector3(10, 10, 10)),
+                (new Vector3(-0.5f, 0.5f, -0.5f), new Vector3(15, 15, 15)),
+                (new Vector3(0.5f, -0.5f, -0.5f), new Vector3(20, 20, 20)),
+                (new Vector3(0.5f, -0.5f, 0.5f), new Vector3(25, 25, 25)),
+                (new Vector3(0.5f, 0.5f, 0.5f), new Vector3(0, 0, 0)),
+                (new Vector3(0.5f, 0.5f, -0.5f), new Vector3(35, 35, 35)),
+            });
+
+            //expected symmetry score
+            testFile.SymmetryScore = 0.434f;
+
+            List<ISymmetryDetector> handlers = new List<ISymmetryDetector>()
+            {
+                //need to set these minimum scores to 0 to ensure we capture all planes
+                new ReflectionalSymmetryDetector(new ColourErrorScoreService(), new ReflectionalSymmetryParameters(){ MIN_CLOUD_INLIER_SCORE = 0, MIN_CORRESPONDANCE_INLIER_SCORE = 0 }),
+            };
+            ISymmetryExporter exporter = new TextExporter();
+            SymmetryDetectionHandler drs = new SymmetryDetectionHandler(testFile, handlers);
+            drs.DetectSymmetries();
+
+            //All 9 planes should be detected however the score should be different 
+
+            if (drs.Symmetries.Count(s => s.SymmetryType == Enums.SymmetryTypeEnum.Reflectional) != 9)
+            {
+                throw new Exception("Incorrect number of symmetry planes detected");
+            }
+            if (!drs.Symmetries.All(s => new Vector3(MathF.Round(s.Origin.X), MathF.Round(s.Origin.Y), MathF.Round(s.Origin.Z)) == new Vector3(0, 0, 0)))
+            {
+                throw new Exception("Incorrect Origin set for symmetry planes");
+            }
+            //round to remove any floating point errors
+            if (!CheckCollectionContainsVector(drs.Symmetries, new Vector3(1, 0, 0)))
+            {
+                throw new Exception("Missing plane (1, 0, 0) in detected symmetries");
+            }
+            if (!CheckCollectionContainsVector(drs.Symmetries, new Vector3(0, 1, 0)))
+            {
+                throw new Exception("Missing plane (0, 1, 0) in detected symmetries");
+            }
+
+            if (!CheckCollectionContainsVector(drs.Symmetries, new Vector3(0, 0, 1)))
+            {
+                throw new Exception("Missing plane (0, 0, 1) in detected symmetries");
+            }
+
+            if (!CheckCollectionContainsVector(drs.Symmetries, new Vector3(1, 1, 0)))
+            {
+                throw new Exception("Missing plane (1, 1, 0) in detected symmetries");
+            }
+            //check for both possible permutations of this plane
+            if (!CheckCollectionContainsVector(drs.Symmetries, new Vector3(1, -1, 0)) && !CheckCollectionContainsVector(drs.Symmetries, new Vector3(-1, 1, 0)))
+            {
+                throw new Exception("Missing plane (1, -1, 0) in detected symmetries");
+            }
+
+            if (!CheckCollectionContainsVector(drs.Symmetries, new Vector3(0, 1, 1)))
+            {
+                throw new Exception("Missing plane (1, 1, 0) in detected symmetries");
+            }
+            if (!CheckCollectionContainsVector(drs.Symmetries, new Vector3(0, 1, -1)) && !CheckCollectionContainsVector(drs.Symmetries, new Vector3(0, -1, 1)))
+            {
+                throw new Exception("Missing plane (0, 1, -1) in detected symmetries");
+            }
+
+            if (!CheckCollectionContainsVector(drs.Symmetries, new Vector3(1, 0, 1)))
+            {
+                throw new Exception("Missing plane (1, 0, 1) in detected symmetries");
+            }
+            if (!CheckCollectionContainsVector(drs.Symmetries, new Vector3(1, 0, -1)) && !CheckCollectionContainsVector(drs.Symmetries, new Vector3(-1, 0, 1)))
+            {
+                throw new Exception("Missing plane (1, 0, -1) in detected symmetries");
+            }
+
+            AverageGlobalScoreService averageScoreService = new AverageGlobalScoreService();
+            var score = averageScoreService.CalculateGlobalScore(drs);
+            if (testFile.SymmetryScore != MathF.Round(score, 3))
+            {
+                throw new Exception("Unexpected score calculated");
+            }
+
+            BestPlaneGlobalScoreService bestPlaneScoreService = new BestPlaneGlobalScoreService();
+            var bestPlaneScore = bestPlaneScoreService.CalculateGlobalScore(drs);
+
+            if (0.951f != MathF.Round(bestPlaneScore, 3))
+            {
+                throw new Exception("Unexpected best plane score calculated");
+            }
+
+            //write output to console
+            string export = exporter.ExportSymmetries(drs.Symmetries, score);
+            Console.Write(export);
+        }
+
+        private static void TestColourUnitCubeSinglePlaneDetected()
+        {
+            Console.WriteLine("Detecting symmetries for unit cube");
+
+            TestFileType testFile = new TestFileType(new List<(Vector3, Vector3)>()
+            {
+                (new Vector3(-0.5f, -0.5f, -0.5f), new Vector3(0, 0, 0)),
+                (new Vector3(-0.5f, -0.5f , 0.5f), new Vector3(5, 5, 5)),
+                (new Vector3(-0.5f, 0.5f, 0.5f), new Vector3(0, 0, 0)),
+                (new Vector3(-0.5f, 0.5f, -0.5f), new Vector3(15, 15, 15)),
+                (new Vector3(0.5f, -0.5f, -0.5f), new Vector3(20, 20, 20)),
+                (new Vector3(0.5f, -0.5f, 0.5f), new Vector3(25, 25, 25)),
+                (new Vector3(0.5f, 0.5f, 0.5f), new Vector3(20, 20, 20)),
+                (new Vector3(0.5f, 0.5f, -0.5f), new Vector3(35, 35, 35)),
+            });
+
+            //expected symmetry score
+            testFile.SymmetryScore = 0.077f;
+
+            List<ISymmetryDetector> handlers = new List<ISymmetryDetector>()
+            {
+                new ReflectionalSymmetryDetector(new DistanceErrorScoreService(), new ReflectionalSymmetryParameters(){ MAX_COLOUR_INTENSITY_DIFF = 0 }),
+            };
+            ISymmetryExporter exporter = new TextExporter();
+            SymmetryDetectionHandler drs = new SymmetryDetectionHandler(testFile, handlers);
+            drs.DetectSymmetries();
+
+            if (drs.Symmetries.Count(s => s.SymmetryType == Enums.SymmetryTypeEnum.Reflectional) != 1)
+            {
+                throw new Exception("Incorrect number of symmetry planes detected");
+            }
+            if (!drs.Symmetries.All(s => new Vector3(MathF.Round(s.Origin.X), MathF.Round(s.Origin.Y), MathF.Round(s.Origin.Z)) == new Vector3(0, 0, 0)))
+            {
+                throw new Exception("Incorrect Origin set for symmetry planes");
+            }
+            //round to remove any floating point errors
+            if (!CheckCollectionContainsVector(drs.Symmetries, new Vector3(0, 1, 1)))
+            {
+                throw new Exception("Missing plane (0, 0, 1) in detected symmetries");
+            }
+
+            AverageGlobalScoreService averageScoreService = new AverageGlobalScoreService();
+            var score = averageScoreService.CalculateGlobalScore(drs);
+            if (testFile.SymmetryScore != MathF.Round(score, 3))
+            {
+                throw new Exception("Unexpected score calculated");
+            }
+
+            BestPlaneGlobalScoreService bestPlaneScoreService = new BestPlaneGlobalScoreService();
+            var bestPlaneScore = bestPlaneScoreService.CalculateGlobalScore(drs);
+
+            if (1 != MathF.Round(bestPlaneScore, 3))
+            {
+                throw new Exception("Unexpected best plane score calculated");
+            }
+
+            //write output to console
+            string export = exporter.ExportSymmetries(drs.Symmetries, score);
+            Console.Write(export);
+        }
+
         private static void TestUnitSphere()
         {
             Console.WriteLine("Detecting symmetries for unit sphere");
 
-            List<Vector3> spherePoints = new List<Vector3>();
+            List<(Vector3, Vector3)> spherePoints = new List<(Vector3, Vector3)>();
 
             //angle along x-axis - radians
             float azimuthalAngleStepRad = 12f.ConvertToRadians();
 
             //add the polar point
-            spherePoints.Add(Vector3.UnitZ);
+            spherePoints.Add((Vector3.UnitZ, new Vector3(102,102,102)));
 
             //angle along z-axis - radians
             float polarAngleStepRad = 12f.ConvertToRadians();
@@ -146,7 +308,8 @@ namespace SymmetryDetection.e2e
                     point.X = MathF.Sin(polarAngleStepRad * j) * MathF.Cos(azimuthalAngleStepRad * i);
                     point.Y = MathF.Sin(polarAngleStepRad * j) * MathF.Sin(azimuthalAngleStepRad * i);
                     point.Z = MathF.Cos(polarAngleStepRad * j);
-                    spherePoints.Add(point);
+                    var colour = new Vector3(102, 102, 102);
+                    spherePoints.Add((point, colour));
                 }
             }
            
@@ -192,14 +355,13 @@ namespace SymmetryDetection.e2e
             Console.Write(export);
         }
 
-        private static void AddSymmetryLevelsToSculptures()
+        static void Main()
         {
             TestUnitCube();
-            //TestUnitSphere();
+            TestColourUnitCubeSinglePlaneDetected();
+            TestColourUnitCubeScore();
+            TestUnitSphere();
             //TestPerformance();
-            
-            //could also work here with 2D items, instead of creating sphere points we work with circles to find the possible planes
-            //AddSymmetryLevelsToSculptures();
         }
 
         private static bool CheckCollectionContainsVector(List<ISymmetry> symmetries, Vector3 vector)
