@@ -1,14 +1,19 @@
 ﻿using Newtonsoft.Json;
+using SymmetryDetection.DataTypes;
 using SymmetryDetection.Exporters;
 using SymmetryDetection.Extensions;
 using SymmetryDetection.FileTypes;
 using SymmetryDetection.FileTypes.PLY;
+using SymmetryDetection.Helpers;
 using SymmetryDetection.Interfaces;
 using SymmetryDetection.Parameters;
 using SymmetryDetection.ScoreServices;
 using SymmetryDetection.SymmetryDectection;
+using SymmetryDetection.SymmetryDetectors;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -34,11 +39,11 @@ namespace SymmetryDetection.e2e
             });
 
             //expected symmetry score
-            testFile.SymmetryScore = 0.310f;
+            testFile.SymmetryScore = 0.692f;
 
             List<ISymmetryDetector> handlers = new List<ISymmetryDetector>()
             {
-                new ReflectionalSymmetryDetector(new ReflectionalSymmetryScoreService()),
+                new ReflectionalSymmetryDetector(new DistanceErrorScoreService()),
             };
             ISymmetryExporter exporter = new TextExporter();
             SymmetryDetectionHandler drs = new SymmetryDetectionHandler(testFile, handlers);
@@ -48,7 +53,7 @@ namespace SymmetryDetection.e2e
             {
                 throw new Exception("Incorrect number of symmetry planes detected");
             }
-            if (!drs.Symmetries.All(s => s.Origin == new Vector3(0, 0, 0)))
+            if (!drs.Symmetries.All(s => new Vector3(MathF.Round(s.Origin.X), MathF.Round(s.Origin.Y), MathF.Round(s.Origin.Z)) == new Vector3(0, 0, 0)))
             {
                 throw new Exception("Incorrect Origin set for symmetry planes");
             }
@@ -95,10 +100,19 @@ namespace SymmetryDetection.e2e
                 throw new Exception("Missing plane (1, 0, -1) in detected symmetries");
             }
 
-            float score = drs.CalculateGlobalSymmetryScore();
+            AverageGlobalScoreService averageScoreService = new AverageGlobalScoreService();
+            var score = averageScoreService.CalculateGlobalScore(drs);
             if (testFile.SymmetryScore != MathF.Round(score, 3))
             {
                 throw new Exception("Unexpected score calculated");
+            }
+
+            BestPlaneGlobalScoreService bestPlaneScoreService = new BestPlaneGlobalScoreService();
+            var bestPlaneScore = bestPlaneScoreService.CalculateGlobalScore(drs);
+
+            if (1 != MathF.Round(bestPlaneScore, 3))
+            {
+                throw new Exception("Unexpected best plane score calculated");
             }
 
             //write output to console
@@ -141,13 +155,14 @@ namespace SymmetryDetection.e2e
 
             List<ISymmetryDetector> handlers = new List<ISymmetryDetector>()
             {
-                new ReflectionalSymmetryDetector(new ReflectionalSymmetryScoreService()),
+                new ReflectionalSymmetryDetector(new DistanceErrorScoreService()),
             };
             ISymmetryExporter exporter = new TextExporter();
             SymmetryDetectionHandler drs = new SymmetryDetectionHandler(testFile, handlers);
             drs.DetectSymmetries();
 
-            if (drs.Symmetries.Count != 29)
+            //this is the maximum number of planes we can detect
+            if (drs.Symmetries.Count != 13)
             {
                 throw new Exception("Incorrect number of symmetry planes detected");
             }
@@ -156,10 +171,20 @@ namespace SymmetryDetection.e2e
                 throw new Exception("Incorrect Origin set for symmetry planes");
             }
 
-            float score = drs.CalculateGlobalSymmetryScore();
+            AverageGlobalScoreService averageScoreService = new AverageGlobalScoreService();
+            var score = averageScoreService.CalculateGlobalScore(drs);
+
             if (testFile.SymmetryScore != MathF.Round(score, 3))
             {
                 throw new Exception("Unexpected score calculated");
+            }
+
+            BestPlaneGlobalScoreService bestPlaneScoreService = new BestPlaneGlobalScoreService();
+            var bestPlaneScore = bestPlaneScoreService.CalculateGlobalScore(drs);
+
+            if (1 != MathF.Round(bestPlaneScore, 3))
+            {
+                throw new Exception("Unexpected best plane score calculated");
             }
 
             //write output to console
@@ -169,7 +194,7 @@ namespace SymmetryDetection.e2e
 
         private static void AddSymmetryLevelsToSculptures()
         {
-            int totalSculptures = 149, startSculpture = 1;
+            int totalSculptures = 5, startSculpture = 2;
 
             for (int i = startSculpture; i < totalSculptures + startSculpture; i++)
             {
@@ -185,33 +210,91 @@ namespace SymmetryDetection.e2e
 
                 List<ISymmetryDetector> handlers = new List<ISymmetryDetector>()
                 {
-                    new ReflectionalSymmetryDetector(new ReflectionalSymmetryScoreService(), parameters),
+                    new ReflectionalSymmetryDetector(new DistanceErrorScoreService(), parameters),
                     //new RotationalSymmetryDectector()
                 };
                 ISymmetryExporter exporter = new TextExporter();
                 SymmetryDetectionHandler drs = new SymmetryDetectionHandler(file, handlers);
                 drs.DetectSymmetries();
-                var globalScore = drs.CalculateGlobalSymmetryScore();
-                
-                file.SymmetryLevel = globalScore;
-                File.WriteAllText(fileLoc, JsonConvert.SerializeObject(file, Formatting.Indented));
-                string export = exporter.ExportSymmetries(drs.Symmetries, globalScore);
+
+                BestPlaneGlobalScoreService bestPlaneScoreService = new BestPlaneGlobalScoreService();
+                var bestPlaneScore = bestPlaneScoreService.CalculateGlobalScore(drs);
+
+                AverageGlobalScoreService averageGlobalScoreService = new AverageGlobalScoreService();
+                var averageScore = averageGlobalScoreService.CalculateGlobalScore(drs);
+
+                if(averageScore != file.SymmetryLevel)
+                {
+                    throw new Exception("Unexpected symmetry score returned");
+                }
+
+                file.BestPlaneSymmetryScore = bestPlaneScore;
+                file.TotalPlanesDetected = drs.Symmetries.Count;
+
+                file.BirkhoffAverageSymmetryLevel = averageScore / file.CompressionRatio;
+                file.BirkhoffBestPlaneScore = bestPlaneScore / file.CompressionRatio;
+
+                //File.WriteAllText(fileLoc, JsonConvert.SerializeObject(file, Formatting.Indented));
+                string export = exporter.ExportSymmetries(drs.Symmetries, bestPlaneScore);
 
                 Console.Write(export);
                 Console.WriteLine();
             }
         }
 
+        private static void TestPerformance()
+        {
+            Console.WriteLine("Detecting symmetries for item with 1000 vertices");
+
+            var verts = new List<Vector3>()
+            {
+                new Vector3(-0.5f, -0.5f, -0.5f),
+                new Vector3(-0.5f, -0.5f , 0.5f),
+                new Vector3(-0.5f, 0.5f, 0.5f),
+                new Vector3(-0.5f, 0.5f, -0.5f),
+                new Vector3(0.5f, -0.5f, -0.5f),
+                new Vector3(0.5f, -0.5f, 0.5f),
+                new Vector3(0.5f, 0.5f, 0.5f),
+                new Vector3(0.5f, 0.5f, -0.5f),
+            };
+
+            var totalVerts = new List<Vector3>();
+            Random rand = new Random();
+            for(int i = 0; i < 1000; i++)
+            {
+                totalVerts.Add(verts[rand.Next(verts.Count)]);
+            }
+
+            var testFile = new TestFileType(totalVerts);
+
+            List<ISymmetryDetector> handlers = new List<ISymmetryDetector>()
+            {
+                new ReflectionalSymmetryDetector(new DistanceErrorScoreService()),
+            };
+            ISymmetryExporter exporter = new TextExporter();
+            SymmetryDetectionHandler drs = new SymmetryDetectionHandler(testFile, handlers);
+
+            DateTime start = DateTime.Now;
+            drs.DetectSymmetries();
+            DateTime end = DateTime.Now;
+            var duration = end - start;
+            Console.WriteLine($"Process took: {duration.TotalSeconds}");
+        }
+
         static void Main(string[] args)
         {
+            //var res = PointHelpers.ReflectPoint(new Vector3(0.041f, 15.5f, 8.7f), new ReflectionalSymmetry(new Vector3(5, 5, 5), new Vector3(5, 10, 5)));
             TestUnitCube();
-            TestUnitSphere();
-            AddSymmetryLevelsToSculptures();
+            //TestUnitSphere();
+            //TestPerformance();
+            
+            //could also work here with 2D items, instead of creating sphere points we work with circles to find the possible planes
+            //AddSymmetryLevelsToSculptures();
         }
 
         private static bool CheckCollectionContainsVector(List<ISymmetry> symmetries, Vector3 vector)
         {
-            return symmetries.Any(s => MathF.Round(s.Normal.X) == vector.X && MathF.Round(s.Normal.Y) == vector.Y && MathF.Round(s.Normal.Z) == vector.Z);
+            return symmetries.Any(s => Math.Round(s.Normal.X) == vector.X && Math.Round(s.Normal.Y) == vector.Y && Math.Round(s.Normal.Z) == vector.Z);
         }
     }
 }

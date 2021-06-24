@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Numerics;
 using System.Text;
@@ -212,7 +211,6 @@ namespace SymmetryDetection.FileTypes.PLY
                     }
                     Vertices.Add(new Vertex()
                     {
-                        Colour = Color.FromArgb(r, b, g, a),
                         Position = position,
                         Curvature = curvature,
                         Normal = normal
@@ -276,7 +274,6 @@ namespace SymmetryDetection.FileTypes.PLY
                 }
                 Vertices.Add(new Vertex()
                 {
-                    Colour = Color.FromArgb(r, b, g, a),
                     Position = position,
                     Curvature = curvature,
                     Normal = normal

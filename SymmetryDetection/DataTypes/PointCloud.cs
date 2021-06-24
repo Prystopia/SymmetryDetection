@@ -41,30 +41,51 @@ namespace SymmetryDetection.DataTypes
 
             return newCloud;
         }
-
-        public List<(PointXYZNormal neighbour, float distanceSquared, int index)> GetNeighbours(PointXYZNormal initial, float? searchRadius = 1)
+        public class NeigbourInfo
         {
-            int count = 0;
-            List<(PointXYZNormal neighbour, float distanceSquared, int index)> neighbourPoints = new List<(PointXYZNormal neighbour, float distanceSquared, int index)>();
-            foreach (var point2 in Points)
+            public PointXYZNormal neighbour;
+            public float distance;
+            public int index;
+        }
+        public class PointInfo
+        {
+            public int index;
+            public PointXYZNormal point;
+        }
+
+        public List<NeigbourInfo> GetNeighbours(PointXYZNormal initial, float? searchRadius = 1)
+        {
+            List<NeigbourInfo> neighbourPoints = new List<NeigbourInfo>();
+
+            IEnumerable<PointInfo> reducedPoints = Points.Select((p, i) => new PointInfo() { index = i, point = p });
+            if (searchRadius.HasValue)
             {
-                if (initial.Id != point2.Id)
+                //reduce number of points - only need to check for search radius in x, y & z to find items
+                Vector3 initialPos = initial.Position;
+                var max = new Vector3(initialPos.X + searchRadius.Value, initialPos.Y + searchRadius.Value, initialPos.Z + searchRadius.Value);
+                var min = new Vector3(initialPos.X - searchRadius.Value, initialPos.Y - searchRadius.Value, initialPos.Z - searchRadius.Value);
+                reducedPoints = Points.Select((p, i) => new PointInfo() { point = p, index = i }).Where(p => p.point.Position.X >= min.X && p.point.Position.X <= max.X &&
+                                                       p.point.Position.Y >= min.Y && p.point.Position.Y <= max.Y &&
+                                                       p.point.Position.Z >= min.Z && p.point.Position.Z <= max.Z);
+            }
+            foreach (var point2 in reducedPoints)
+            {
+                if (initial.Id != point2.point.Id)
                 {
-                    var distance = point2.GetDistance(initial.Position);
+                    var distance = point2.point.GetDistanceSquared(initial.Position);
                     if (!searchRadius.HasValue || distance <= searchRadius)
                     {
-                        neighbourPoints.Add((point2, distance, count));
+                        neighbourPoints.Add(new NeigbourInfo() { neighbour = point2.point, distance = distance, index = point2.index });
                     }
                 }
-                count++;
             }
             return neighbourPoints;
         }
 
-        public List<(PointXYZNormal neighbour, float distance, int index)> GetClosetNeighbours(PointXYZNormal initial, int neighboursToReturn)
+        public List<NeigbourInfo> GetClosetNeighbours(PointXYZNormal initial, int neighboursToReturn)
         {
             var neighbours = GetNeighbours(initial, null);
-            var orderedNeighbours = neighbours.OrderBy(n => n.distanceSquared);
+            var orderedNeighbours = neighbours.OrderBy(n => n.distance);
             return orderedNeighbours.Take(neighboursToReturn).ToList();
         }
     }

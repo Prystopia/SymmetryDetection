@@ -29,6 +29,7 @@ namespace SymmetryDetection.SymmetryDectection
         private List<ISymmetry> FilteredSymmetries { get; set; }
         private IScoreService<ReflectionalSymmetryParameters> ReflectionalScoreService { get; set; }
         private ReflectionalSymmetryParameters Parameters { get; set; }
+        private const int MAX_PLANES = 13;
 
         public ReflectionalSymmetryDetector(IScoreService<ReflectionalSymmetryParameters> reflectionalScoreService, ReflectionalSymmetryParameters parameters = null)
         {
@@ -52,15 +53,18 @@ namespace SymmetryDetection.SymmetryDectection
 
             GetInitialSymmetries(Cloud);
 
-            foreach(var currentSymmetry in InitialSymmetries)
+            foreach (var currentSymmetry in InitialSymmetries)
             {
                 List<Correspondence> currentCorrespondances = new List<Correspondence>();
                 ISymmetry refined = RefineSymmetryPosition(Cloud, currentSymmetry);
-                if (RefineGlobalSymmetryPosition(Cloud, refined))
+
+                bool globalRefined = RefineGlobalSymmetryPosition(Cloud, refined);
+
+                if (globalRefined)
                 {
                     List<float> currentPointSymmetryScores = new List<float>();
-
                     this.ReflectionalScoreService.CalculateSymmetryPointSymmetryScores(Cloud, currentSymmetry, false, Parameters, out List<float> symmScores, out List<Correspondence> symCorrespondences);
+
                     currentCorrespondances.AddRange(symCorrespondences);
                     currentPointSymmetryScores.AddRange(symmScores);
 
@@ -199,7 +203,8 @@ namespace SymmetryDetection.SymmetryDectection
         {
             InitialSymmetries = new List<ISymmetry>();
             //use a step every 45 degrees 360/45 = 8 
-            List<Vector3> spherePoints = GenerateSpherePoints(8);
+            //use 4 as we only place initial planes across half the sphere
+            List<Vector3> spherePoints = GenerateSpherePoints(4);
 
             // Convert to symmetries (and rotate normals using major axes)
             foreach (var point in spherePoints)
@@ -222,13 +227,13 @@ namespace SymmetryDetection.SymmetryDectection
             }
 
             //angle along x-axis - radians
-            float azimuthalAngleStepRad = (2 * MathF.PI) / numSegments;
+            float azimuthalAngleStepRad = (float)(Math.PI) / numSegments;
 
             //add the polar point
             spherePoints.Add(Vector3.UnitZ);
 
             //angle along z-axis - radians
-            var polarAngleStepRad = MathF.PI / (numSegments);
+            var polarAngleStepRad = (Math.PI) / (numSegments);
 
             for (int i = 0; i < numSegments; i++)
             {
@@ -236,9 +241,9 @@ namespace SymmetryDetection.SymmetryDectection
                 for (int j = 1; j < numSegments; j++)
                 {
                     Vector3 point = new Vector3();
-                    point.X = MathF.Sin(polarAngleStepRad * j) * MathF.Cos(azimuthalAngleStepRad * i);
-                    point.Y = MathF.Sin(polarAngleStepRad * j) * MathF.Sin(azimuthalAngleStepRad * i);
-                    point.Z = MathF.Cos(polarAngleStepRad * j);
+                    point.X = (float)(Math.Sin(polarAngleStepRad * j) * Math.Cos(azimuthalAngleStepRad * i));
+                    point.Y = (float)(Math.Sin(polarAngleStepRad * j) * Math.Sin(azimuthalAngleStepRad * i));
+                    point.Z = (float)(Math.Cos(polarAngleStepRad * j));
                     spherePoints.Add(point);
                 }
             }
@@ -253,7 +258,9 @@ namespace SymmetryDetection.SymmetryDectection
             var origin = refined.Origin;
             var normal = refined.Normal;
 
+            
             PointCloud cloudProjected = PointCloudHelpers.ProjectCloudToPlane(cloud, origin, normal);
+            
             for (int i = 0; i < cloud.Points.Count; i++)
             {
                 var projectedPoint = cloudProjected.Points[i];
@@ -261,6 +268,9 @@ namespace SymmetryDetection.SymmetryDectection
 
                 var srcPoint = originalPoint.Position;
                 var neighbours = cloudProjected.GetNeighbours(projectedPoint, 5);
+
+                var srcColour = originalPoint.Colour;
+                var srcIntensity = (srcColour.X + srcColour.Y + srcColour.Z)/3f;
 
                 float minimumFitError = float.MaxValue;
                 float minimumReflectedDistance = float.MaxValue;
@@ -270,13 +280,21 @@ namespace SymmetryDetection.SymmetryDectection
                 {
                     var neighbourPoint = cloud.Points[neighbour.index];
                     var targetPos = neighbourPoint.Position;
+                    var targetColour = neighbourPoint.Colour;
+                    var targetIntensity = (targetColour.X + targetColour.Y + targetColour.Z) / 3f;
 
                     //check distances between points and plane
                     var origDistance = PointHelpers.PointSignedDistance(srcPoint, originalSymmetry);
                     var neighbourDistance = PointHelpers.PointSignedDistance(targetPos, originalSymmetry);
 
                     // If the distance along the symmetry normal between the points of a symmetric correspondence is too small - reject
-                    if (MathF.Abs(origDistance - neighbourDistance) < Parameters.MIN_SYMMETRY_CORRESPONDENCE_DISTANCE)
+                    if (Math.Abs(origDistance - neighbourDistance) < Parameters.MIN_SYMMETRY_CORRESPONDENCE_DISTANCE)
+                    {
+                        continue;
+                    }
+
+                    //check that the intensity of the items is smaller than the specified threshold
+                    if(Math.Abs(srcIntensity - targetIntensity) > Parameters.MAX_COLOUR_INTENSITY_DIFF)
                     {
                         continue;
                     }
@@ -284,9 +302,9 @@ namespace SymmetryDetection.SymmetryDectection
                     //issue is we're getting false positives with a sym fit error of 0 which aren't correspondences as the plane lies halfway between the points
                     //work around this by checking the distance between the original point and reflected target point
                     var reflectedTargetPos = PointHelpers.ReflectPoint(targetPos, originalSymmetry);
-                    float reflectedDistance = originalPoint.GetDistance(reflectedTargetPos);
+                    float reflectedDistance = originalPoint.GetDistanceSquared(reflectedTargetPos);
 
-                    float symFitError = MathF.Abs(ReflectionHelpers.GetReflectionSymmetryPositionFitError(srcPoint, targetPos, refined));
+                    float symFitError = Math.Abs(ReflectionHelpers.GetReflectionSymmetryPositionFitError(srcPoint, targetPos, refined));
                     if (reflectedDistance <= Parameters.MIN_SYMMETRY_CORRESPONDENCE_DISTANCE)
                     {
                         //the closest reflected point with the minimum symmetry error
@@ -368,7 +386,7 @@ namespace SymmetryDetection.SymmetryDectection
                     // NOTE: this is required for faster convergence. Distance along symmetry
                     // normal works faster than point to point distnace
                     // If the distance along the symmetry normal between the points of a symmetric correspondence is too small - reject
-                    if (MathF.Abs(PointHelpers.PointSignedDistance(srcPoint, symmetry) - PointHelpers.PointSignedDistance(targetPoint, symmetry)) >= Parameters.MIN_SYMMETRY_CORRESPONDENCE_DISTANCE)
+                    if (Math.Abs(PointHelpers.PointSignedDistance(srcPoint, symmetry) - PointHelpers.PointSignedDistance(targetPoint, symmetry)) >= Parameters.MIN_SYMMETRY_CORRESPONDENCE_DISTANCE)
                     {
                         // If the distance between the reflected source point and it's nearest neighbor is too big - reject
                         if (neighbours[0].distance <= Parameters.MAX_SYMMETRY_CORRESPONDENCE_REFLECTED_DISTANCE)

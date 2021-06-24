@@ -8,7 +8,7 @@ namespace SymmetryDetection.Parameters
     public class ReflectionalSymmetryParameters : ISymmetryParameters
     {
         /// <summary>
-        //Maximum value for the occlussion score - Not used
+        //Maximum value for the occlusion score - Not used
         /// </summary>
         public float MAX_OCCLUSION_SCORE { get; set; }
         /// <summary>
@@ -27,7 +27,7 @@ namespace SymmetryDetection.Parameters
         /// </summary>
         public float MAX_SYMMETRY_CORRESPONDENCE_REFLECTED_DISTANCE { get; set; } // Amend by the scale of the sculpture - this is for 1m
         /// <summary>
-        /// Minimum allowed distance of the sum of distances between a point and it's correspondence to a symmetry plane i.e. if the original is 1m and the correspondence is 3m then we should reject the symmetry plane
+        /// Minimum allowed squared distance of the sum of distances between a point and it's correspondence to a symmetry plane e.g. if the value is 5, the original is 1m and the correspondence is 4m then we should reject the symmetry plane
         /// </summary>
         public float MIN_SYMMETRY_CORRESPONDENCE_DISTANCE { get; set; }
         /// <summary>
@@ -48,6 +48,11 @@ namespace SymmetryDetection.Parameters
         /// Maximum allowed difference between two proposed symmetry planes to determine whether the planes are similar or not.
         /// </summary>
         public float MAX_DISTANCE_DIFF { get; set; }
+
+        /// <summary>
+        /// Maximum allowed difference between two correspondances colour- based on calculated intensity.
+        /// </summary>
+        public float MAX_COLOUR_INTENSITY_DIFF { get; set; }
 
         public ReflectionalSymmetryParameters()
         {

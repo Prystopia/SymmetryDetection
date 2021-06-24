@@ -31,36 +31,36 @@ namespace SymmetryDetection.Test
             var correspondences = new List<Correspondence>()
             {
                 new Correspondence(
-                    new PointXYZRGBNormal()
+                    new PointXYZNormal()
                     {
                          Position = new Vector3(1, 1, 1),
                           Id = Guid.NewGuid()
                     },
-                    new PointXYZRGBNormal()
+                    new PointXYZNormal()
                     {
                         Position = new Vector3(1,2,1),
                         Id = mainGuid
                     },
                     1),
                  new Correspondence(
-                    new PointXYZRGBNormal()
+                    new PointXYZNormal()
                     {
                          Position = new Vector3(1, 1, 1),
                           Id = Guid.NewGuid()
                     },
-                    new PointXYZRGBNormal()
+                    new PointXYZNormal()
                     {
                         Position = new Vector3(1,5,1),
                         Id = mainGuid
                     },
                     5),
                   new Correspondence(
-                    new PointXYZRGBNormal()
+                    new PointXYZNormal()
                     {
                          Position = new Vector3(1, 1, 1),
                           Id = Guid.NewGuid()
                     },
-                    new PointXYZRGBNormal()
+                    new PointXYZNormal()
                     {
                         Position = new Vector3(1,2,1),
                         Id = mainGuid2

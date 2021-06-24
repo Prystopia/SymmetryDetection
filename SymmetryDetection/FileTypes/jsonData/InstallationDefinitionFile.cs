@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
 using System.Text;
-using System.Text.Json.Serialization;
 
 namespace SymmetryDetection.FileTypes
 {
@@ -15,6 +14,10 @@ namespace SymmetryDetection.FileTypes
     {
         public List<ShapePosition> Items { get; set; }
         public float SymmetryLevel { get; set; }
+        public float BestPlaneSymmetryScore { get; set; }
+        public int TotalPlanesDetected { get; set; }
+        public float BirkhoffAverageSymmetryLevel { get; set; }
+        public float BirkhoffBestPlaneScore {get; set; }
         public Guid Identifier { get; set; }
         public float CompressionRatio { get; set; }
         public int TotalItems { get; set; }

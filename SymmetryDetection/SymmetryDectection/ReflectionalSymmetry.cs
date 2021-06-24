@@ -30,7 +30,7 @@ namespace SymmetryDetection.SymmetryDectection
         public override string ToString()
         {
             var d = ((Normal.X * Origin.X) + (Normal.Y * Origin.Y) + (Normal.Z * Origin.Z));
-            return $"({MathF.Round(d,2)} - {MathF.Round(Normal.X, 2)} * (x - {Math.Round(Origin.X, 2)}) - {MathF.Round(Normal.Y, 2)} * (y - {MathF.Round(Origin.Y, 2)}) - {MathF.Round(Origin.Z * Normal.Z, 2)}) / {MathF.Round(Normal.Z, 2)})";
+            return $"({Math.Round(d,2)} - {Math.Round(Normal.X, 2)} * (x - {Math.Round(Origin.X, 2)}) - {Math.Round(Normal.Y, 2)} * (y - {Math.Round(Origin.Y, 2)}) - {Math.Round(Origin.Z * Normal.Z, 2)}) / {Math.Round(Normal.Z, 2)})";
         }
     }
 }
