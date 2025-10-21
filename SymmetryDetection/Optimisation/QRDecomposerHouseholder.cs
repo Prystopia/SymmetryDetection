@@ -221,7 +221,7 @@ namespace SymmetryDetection.Optimisation
                 HouseholderQ(col, uStandard, uTransposed);
             }
 
-            //gammas[col] = gamma;
+            gammas[col] = gamma;
         }
 
         private void HouseholderQ(int col, double[,] u, double[,] uTransposed)
