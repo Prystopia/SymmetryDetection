@@ -9,19 +9,6 @@ namespace SymmetryDetection.Test
 {
     public class ExtensionMethodTests
     {
-        /*public static Vector3 Multiply(this float[,] original, Vector3 factor)
-        {
-            if(original.GetLength(1) != 3)
-            {
-                throw new ArgumentException();
-            }
-            Vector3 newVector = new Vector3();
-            newVector.X = factor.X * original[0, 0] + factor.Y * original[0, 1] + factor.Y * original[0, 2];
-            newVector.Y = factor.X * original[1, 0] + factor.Y * original[1, 1] + factor.Y * original[1, 2];
-            newVector.Z = factor.X * original[2, 0] + factor.Y * original[2, 1] + factor.Y * original[2, 2];
-            return newVector;
-        }
-*/
         [Fact]
         public void Multiply_Matrix_By_Vector_Test_1()
         {

@@ -26,7 +26,5 @@ namespace SymmetryDetection.Test
             this.ExporterMock = new Mock<ISymmetryExporter>();
             this.Service = new SymmetryDetectionHandler(this.FileTypeMock.Object, new List<ISymmetryDetector> { DetectorMock.Object });
         }
-        //[Fact]
-        //DetectReflectionalSymmetries
     }
 }

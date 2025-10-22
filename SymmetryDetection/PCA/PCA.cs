@@ -7,6 +7,9 @@ using System.Text;
 
 namespace SymmetryDetection.SymmetryDectection
 {
+    /// <summary>
+    /// Holds meta data about the provided Point cloud
+    /// </summary>
     public class PCA
     {
         public PointCloud Cloud { get; set; }

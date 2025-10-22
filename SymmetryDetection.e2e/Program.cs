@@ -1,20 +1,11 @@
-﻿using Newtonsoft.Json;
-using SymmetryDetection.DataTypes;
-using SymmetryDetection.Exporters;
+﻿using SymmetryDetection.Exporters;
 using SymmetryDetection.Extensions;
-using SymmetryDetection.FileTypes;
-using SymmetryDetection.FileTypes.PLY;
-using SymmetryDetection.Helpers;
 using SymmetryDetection.Interfaces;
 using SymmetryDetection.Parameters;
 using SymmetryDetection.ScoreServices;
 using SymmetryDetection.SymmetryDectection;
-using SymmetryDetection.SymmetryDetectors;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
 using System.Linq;
 using System.Numerics;
 
