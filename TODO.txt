@@ -1,6 +1,0 @@
-Refactor into services and use DI
-Add more helpful comments
-Add Unit Tests
-Add E2E tests
-Implement Rotational Symmetry Detection
-Replace Accord.Net EigenVector Calculation / Fix
